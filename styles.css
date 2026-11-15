@@ -81,6 +81,9 @@ ul, ol { padding: 0; list-style: none; }
 .cabecera { position: fixed; inset: 0 0 auto; z-index: 50; height: var(--cabecera); padding: 0 var(--margen); display: flex; align-items: center; gap: 1rem; transition: background .35s, box-shadow .35s; }
 .cabecera.con-fondo { background: var(--amarillo); box-shadow: 0 1px 0 rgba(42, 23, 16, .15); }
 /* con la caja cerrada la marca ya está en la tapa: la cabecera no la repite */
+/* mientras la caja está cerrada o abriéndose, el nav es el borde amarillo de la caja: tapa lo que gira detrás */
+/* la sombra amarilla cubre los 4px entre el nav y la bisagra; al abrirse la caja desaparece con la clase */
+.cabecera.en-tapa { background: var(--amarillo); box-shadow: 0 .25rem 0 var(--amarillo); }
 .cabecera.en-tapa .cabecera__logo { opacity: 0; pointer-events: none; }
 .cabecera__logo { margin-right: auto; min-height: 2.75rem; display: flex; align-items: center; transition: opacity .4s; }
 .cabecera__logo img { width: 8.5rem; }
@@ -110,7 +113,9 @@ ul, ol { padding: 0; list-style: none; }
 /* ---------- 1 · la caja ---------- */
 
 .caja { position: relative; height: 100svh; }
-.caja__escena { position: relative; height: 100svh; overflow: hidden; perspective: 1800px; background: var(--crema); }
+.caja__escena { position: relative; height: 100svh; overflow: hidden; perspective: 1800px; perspective-origin: 50% calc(var(--cabecera) + .25rem); background: var(--crema); }
+/* el borde amarillo de la caja, arriba de la bisagra: se desvanece (--tira) cuando la tapa termina de abrirse */
+.caja__escena::before { content: ""; position: absolute; inset: 0 0 auto; height: calc(var(--cabecera) + .25rem); z-index: 4; background: var(--amarillo); opacity: var(--tira, 1); pointer-events: none; }
 
 /* el frente: igual que la caja real, amarillo con filete doble, logo y el producto */
 .frente {
@@ -118,7 +123,10 @@ ul, ol { padding: 0; list-style: none; }
   background: var(--amarillo);
   display: grid; grid-template-rows: 1fr auto;
   padding: calc(var(--cabecera) + 1.75rem) calc(var(--margen) + .75rem) 2.25rem;
-  transform-origin: 50% 0;
+  /* la bisagra de la tapa es la línea roja de arriba del marco */
+  transform-origin: 50% calc(var(--cabecera) + .25rem);
+  /* la tapa empieza en la bisagra: lo de arriba es el borde fijo de la caja y no gira */
+  clip-path: inset(calc(var(--cabecera) + .25rem) 0 0 0);
   backface-visibility: hidden;
   will-change: transform;
 }
@@ -138,26 +146,54 @@ ul, ol { padding: 0; list-style: none; }
 .frente__alfajor { height: min(36svh, 72vw); width: auto; margin-top: 1.5rem; filter: drop-shadow(0 26px 28px rgba(122, 61, 0, .38)); will-change: transform; }
 .frente__pie { display: grid; justify-items: center; gap: .85rem; }
 .frente__acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem; width: 100%; max-width: 28rem; }
-.frente__acciones .boton { flex: 1 1 11rem; }
+.frente__acciones { flex-direction: column; align-items: center; }
+.frente__acciones .boton { align-self: stretch; }
+/* botones del hero: píldora, con relieve suave y una flecha que avanza */
+.frente__acciones .boton {
+  min-height: 3.5rem; border-radius: 999px; border-width: 1.5px; padding: 0 1.6rem;
+  font-weight: 650; letter-spacing: .01em;
+  transition: background .3s, color .3s, border-color .3s, box-shadow .35s var(--curva), transform .35s var(--curva);
+}
+.frente__acciones .boton svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.frente__acciones .boton--rojo {
+  padding-right: .45rem; gap: .9rem;
+  border: 0; box-shadow: 0 10px 24px -10px rgba(181, 30, 18, .7);
+}
+.boton__flecha { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--crema); color: var(--rojo); transition: transform .35s var(--curva); }
+/* "Buscar un café" es un link, no un botón: acompaña sin competir con "Comprar" */
+.frente__link {
+  display: inline-flex; align-items: center; gap: .5rem; min-height: 3rem; padding: 0 .25rem;
+  font: 600 .95rem/1 var(--texto); color: var(--choco); text-decoration: none;
+}
+.frente__link svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.frente__link span { background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1.5px no-repeat; padding-bottom: .2rem; transition: background-size .35s var(--curva); }
+.frente__link:focus-visible { outline: 2px solid var(--choco); outline-offset: 3px; border-radius: .25rem; }
+@media (hover: hover) {
+  .frente__acciones .boton:hover { transform: translateY(-2px); }
+  .frente__acciones .boton--rojo:hover { box-shadow: 0 16px 30px -12px rgba(181, 30, 18, .8); }
+  .frente__acciones .boton--rojo:hover .boton__flecha { transform: translateX(3px) rotate(-45deg); }
+  .frente__link:hover { color: var(--rojo); }
+  .frente__link:hover span { background-size: 0 1.5px; background-position: 100% 100%; }
+}
+.frente__acciones .boton:active { transform: translateY(0) scale(.97); }
+.frente__acciones .boton:focus-visible { outline: 2px solid var(--choco); outline-offset: 3px; }
 .frente__envio { display: flex; align-items: center; gap: .45rem; font-size: .85rem; color: var(--choco-medio); }
 .frente__envio::before { content: ""; width: .45rem; height: .45rem; border-radius: 50%; background: var(--rojo); }
-.frente__abrir { display: none; }
 
 @media (min-width: 64rem) {
-  .frente { padding-bottom: 2.75rem; }
+  /* sin fila de botones abajo: el centro tiene todo el alto y el logo no se sale hacia el marco */
+  /* más aire arriba: el logo arranca bien por debajo del filete del marco y no lo toca */
+  .frente { grid-template-rows: 1fr; padding-top: calc(var(--cabecera) + 3.5rem); padding-bottom: 2.75rem; }
   .frente__esquina { font-size: .72rem; }
   .frente__esquina--izq { left: 1.6rem; }
   .frente__esquina--der { right: 1.6rem; }
   .frente__alfajor { height: min(40svh, 26rem); }
-  .frente__abrir {
-    position: absolute; right: 3rem; bottom: 2.75rem;
-    display: grid; justify-items: center; gap: .55rem;
-    border: 0; background: none; padding: 0; cursor: pointer;
-    font: 600 .7rem/1 var(--texto); letter-spacing: .16em; text-transform: uppercase; color: var(--choco);
-  }
-  .frente__abrir i { width: 1px; height: 2.25rem; background: currentColor; animation: bajar 1.8s var(--curva) infinite; }
+  /* un botón en cada costado, abajo; el centro queda libre para el alfajor */
+  .frente__pie { position: absolute; left: 3rem; right: 3rem; bottom: 2.75rem; z-index: 1; justify-items: start; pointer-events: none; }
+  .frente__acciones { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: nowrap; max-width: none; }
+  .frente__acciones .boton { align-self: auto; }
+  .frente__acciones .boton, .frente__link { flex: none; pointer-events: auto; }
 }
-@keyframes bajar { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
 
 /* adentro de la caja: alfajores enteros apilados y uno partido apoyado */
 .adentro { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 1.5rem; padding-top: var(--cabecera); }
@@ -170,18 +206,21 @@ ul, ol { padding: 0; list-style: none; }
 /* cada alfajor apoya sobre la tapa del de abajo (la tapa ocupa el 11% de su alto) */
 .apilado__alfajor { position: absolute; left: 0; bottom: calc(var(--i) * var(--a) * .62); width: 100%; z-index: var(--i); filter: drop-shadow(0 10px 12px rgba(42, 23, 16, .25)); will-change: transform; }
 .apilado__alfajor--espejo { transform: scaleX(-1); }
-.apilado__nota { display: none; }
 
 .partido { position: relative; width: calc(var(--a) * 1.05); margin-left: calc(var(--a) * -.1); z-index: 5; }
 .partido img { width: 100%; filter: drop-shadow(0 18px 18px rgba(42, 23, 16, .28)); }
 /* el punto marca la capa; en el celu lleva el número y la referencia va abajo */
 .partido__nota { position: absolute; left: var(--x); top: var(--y); transform: translate(-50%, -50%); }
-.partido__nota b { display: grid; place-items: center; width: 1.35rem; height: 1.35rem; border-radius: 50%; background: var(--crema); color: var(--choco); font: 700 .7rem/1 var(--texto); box-shadow: 0 0 0 2px var(--rojo), 0 4px 10px rgba(42, 23, 16, .3); }
-.partido__nota span { display: none; }
+/* número: punto rojo con halo crema, como un pin sobre la capa */
+.partido__nota b, .leyenda b {
+  display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%;
+  background: var(--rojo); color: var(--crema); font: 700 .72rem/1 var(--texto); font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 3px rgba(255, 246, 222, .9), 0 6px 14px -4px rgba(42, 23, 16, .45);
+}
+.partido__nota i, .partido__nota span { display: none; }
 
-.leyenda { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem 1.1rem; padding: 0 var(--margen); font: 600 .78rem/1 var(--texto); }
-.leyenda li { display: flex; align-items: center; gap: .4rem; }
-.leyenda b { display: grid; place-items: center; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: var(--crema); box-shadow: 0 0 0 2px var(--rojo); font-size: .66rem; }
+.leyenda { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem 1.2rem; padding: 0 var(--margen); font: 600 .78rem/1 var(--texto); }
+.leyenda li { display: flex; align-items: center; gap: .5rem; }
 
 .volador { position: absolute; inset: 0; pointer-events: none; }
 .volador img { position: absolute; left: 50%; top: 52%; width: calc(var(--w) * 1vw + 3rem); filter: var(--sombra-producto); opacity: 0; will-change: transform; }
@@ -190,20 +229,29 @@ ul, ol { padding: 0; list-style: none; }
 
 @media (min-width: 64rem) {
   .mesa { --a: min(16vw, 30svh, 17rem); margin-top: 3rem; }
-  .apilado__nota {
-    display: flex; align-items: center; gap: .6rem;
-    position: absolute; right: calc(100% + .5rem); top: 45%;
-    font: italic 400 1.15rem/1.15 var(--nota); color: var(--choco-medio); white-space: nowrap;
-  }
-  .apilado__nota::after { content: ""; width: 2.5rem; height: 1.5px; background: var(--choco); }
-  /* en compu la etiqueta sale del punto con una línea hasta el costado derecho */
+  /* en compu: el número va en un círculo rojo que late; de ahí sale una línea fina hasta el nombre */
   .partido { container-type: inline-size; }
-  .partido__nota { display: flex; align-items: center; transform: translate(-.675rem, -50%); }
-  .partido__nota b { flex: none; }
-  .partido__nota span { display: flex; align-items: center; gap: .6rem; font: 700 .8rem/1 var(--texto); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
-  .partido__nota span::before { content: ""; width: calc((100% - var(--x)) * 1 + 2.5rem); width: calc((100 - var(--n)) * 1cqw + 2.5rem); height: 1.5px; background: var(--choco); box-shadow: 0 0 0 1px rgba(255, 246, 222, .5); }
+  .partido__nota { display: flex; align-items: center; transform: translate(-.6rem, -50%); --retraso: 0s; }
+  .partido__nota:nth-of-type(2) { --retraso: .7s; }
+  .partido__nota:nth-of-type(3) { --retraso: 1.4s; }
+  .partido__nota b { flex: none; position: relative; z-index: 1; width: 1.2rem; height: 1.2rem; font-size: .6rem; box-shadow: 0 0 0 2.5px rgba(255, 246, 222, .9), 0 4px 10px -3px rgba(42, 23, 16, .45); }
+  .partido__nota b::before, .partido__nota b::after {
+    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 50%; border: 1.5px solid var(--rojo);
+    animation: latido 4.2s cubic-bezier(.25, .6, .35, 1) var(--retraso) infinite both;
+  }
+  .partido__nota b::after { animation-delay: calc(var(--retraso) + 2.1s); }
+  .partido__nota i {
+    display: block; position: relative; flex: none; height: 1px; margin-left: 3px;
+    width: calc((100 - var(--n)) * 1cqw + 2.5rem);
+    background: linear-gradient(90deg, rgba(42, 23, 16, .1), var(--choco));
+  }
+  .partido__nota span {
+    display: block; margin-left: .8rem;
+    font: 700 .78rem/1 var(--texto); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; color: var(--choco);
+  }
   .leyenda { display: none; }
   .volador img { width: calc(var(--w) * .8vw + 3rem); }
+  @keyframes latido { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(2.8); opacity: 0; } }
   .volador img[data-solo-compu] { display: block; }
 }
 
@@ -222,13 +270,16 @@ ul, ol { padding: 0; list-style: none; }
 .lineas__titulo { position: absolute; top: calc(var(--cabecera) + 1.25rem); left: var(--margen); font: 900 clamp(2.6rem, 10vw, 5.5rem)/.86 var(--display); text-transform: uppercase; }
 .lineas__titulo .hueco { -webkit-text-stroke-color: var(--choco); }
 
+/* --t y --b registradas como longitudes: el navegador las resuelve a px y GSAP las anima sin mezclar unidades */
+@property --t { syntax: '<length-percentage>'; inherits: true; initial-value: 0px; }
+@property --b { syntax: '<length-percentage>'; inherits: true; initial-value: 0px; }
 /* cada panel es de pantalla completa; el recorte lo muestra como tarjeta hasta que se abre */
 .panel { position: absolute; inset: 0; background: var(--fondo); color: var(--tinta); clip-path: inset(var(--t) var(--r) var(--b) var(--l) round var(--radio)); --radio: 1rem; }
 /* celu: 2 x 2 con el mismo margen entre tarjetas que contra los bordes, y aire sobre el índice */
-.panel:nth-of-type(1) { --t: 30%; --r: 51.5%; --b: 40.5%; --l: 5%; }
-.panel:nth-of-type(2) { --t: 30%; --r: 5%; --b: 40.5%; --l: 51.5%; }
-.panel:nth-of-type(3) { --t: 62.5%; --r: 51.5%; --b: 10%; --l: 5%; }
-.panel:nth-of-type(4) { --t: 62.5%; --r: 5%; --b: 10%; --l: 51.5%; }
+.panel:nth-of-type(1) { --t: 30svh; --r: 51.5%; --b: 40.5svh; --l: 5%; }
+.panel:nth-of-type(2) { --t: 30svh; --r: 5%; --b: 40.5svh; --l: 51.5%; }
+.panel:nth-of-type(3) { --t: 62.5svh; --r: 51.5%; --b: 10svh; --l: 5%; }
+.panel:nth-of-type(4) { --t: 62.5svh; --r: 5%; --b: 10svh; --l: 51.5%; }
 
 /* la tarjeta sigue al recorte: su caja crece con él */
 .panel__tarjeta { position: absolute; inset: var(--t) var(--r) var(--b) var(--l); display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: .75rem; padding: 1.25rem 1.1rem 1.1rem; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
@@ -284,19 +335,34 @@ ul, ol { padding: 0; list-style: none; }
 .panel__fotos img:nth-child(3) { transform: rotate(-2deg); }
 
 @media (min-width: 64rem) {
-  /* compu: cuatro tarjetas de 21.5% con 2% de margen entre ellas */
-  .panel:nth-of-type(1) { --t: 33%; --r: 74.5%; --b: 13%; --l: 4%; }
-  .panel:nth-of-type(2) { --t: 33%; --r: 51%; --b: 13%; --l: 27.5%; }
-  .panel:nth-of-type(3) { --t: 33%; --r: 27.5%; --b: 13%; --l: 51%; }
-  .panel:nth-of-type(4) { --t: 33%; --r: 4%; --b: 13%; --l: 74.5%; }
+  /* compu: el título va en una línea y su tamaño sigue al alto de la pantalla */
+  .lineas { --titulo: clamp(2.8rem, min(5.5vw, 11svh), 5.5rem); }
+  .lineas__titulo { font-size: var(--titulo); white-space: nowrap; }
+  .lineas__titulo br { display: none; }
+  .lineas__titulo .hueco { margin-left: .2em; }
+  /* compu: cuatro tarjetas de 21.5% con 2% de margen; arrancan justo debajo del título y terminan sobre el índice */
+  .lineas .panel { --t: calc(var(--cabecera) + 1.25rem + var(--titulo) * .86 + 1.5rem); --b: 5rem; }
+  .panel:nth-of-type(1) { --r: 74.5%; --l: 4%; }
+  .panel:nth-of-type(2) { --r: 51%; --l: 27.5%; }
+  .panel:nth-of-type(3) { --r: 27.5%; --l: 51%; }
+  .panel:nth-of-type(4) { --r: 4%; --l: 74.5%; }
   .panel__tarjeta { padding: 1.4rem; }
   /* compu: contenido en una caja centrada de ancho fijo, con aire a los costados */
-  .panel__contenido { grid-template-columns: minmax(0, 30rem) minmax(0, 1fr); column-gap: clamp(3rem, 6vw, 7rem); align-content: center; justify-content: center; padding: calc(var(--cabecera) + 2rem) clamp(2rem, 7vw, 8rem) 6.5rem; }
+  .panel__contenido { grid-template-columns: minmax(0, 30rem) minmax(0, 1fr); column-gap: clamp(3rem, 6vw, 7rem); align-content: safe center; justify-content: center; row-gap: .7rem; padding: calc(var(--cabecera) + 1.5rem) clamp(2rem, 7vw, 8rem) 5.5rem; }
   .panel__contenido > :not(.panel__fotos) { grid-column: 1; }
-  .panel__nombre { font-size: clamp(4.5rem, 8.5vw, 9rem); }
+  .panel__nombre { font-size: clamp(3.4rem, min(8.5vw, 15svh), 9rem); }
   /* las fotos ocupan exactamente las 5 filas del texto: así el bloque queda centrado igual en todas las líneas */
   .panel__fotos { grid-column: 2; grid-row: 1 / 6; align-self: center; justify-self: center; margin: 0; }
-  .panel__fotos img { width: clamp(12rem, 17vw, 19rem); }
+  .panel__fotos img { width: clamp(11rem, min(17vw, 38svh), 19rem); }
+}
+/* compu con pantalla baja: todo un poco más compacto para que no lo corte el nav */
+@media (min-width: 64rem) and (max-height: 760px) {
+  .panel__contenido { row-gap: .45rem; }
+  .panel__dato { font-size: 1.05rem; }
+  .panel__lista a { padding: .5rem 0; }
+  .panel__item-precio { font-size: 1.15rem; }
+  .panel__pie { margin-top: .35rem; }
+  .panel__pie .boton { min-height: 2.85rem; }
 }
 
 /* ---------- 5 · havanna × leo ---------- */

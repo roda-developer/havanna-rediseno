@@ -140,6 +140,8 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
     // la tapa gira hacia arriba sobre su borde superior y se oscurece al darse vuelta
     .fromTo('[data-frente]', { rotationX: 0, '--sombra-tapa': 0 }, { rotationX: -96, '--sombra-tapa': .55, duration: 1, ease: 'power2.in' }, 0)
     .set('[data-frente]', { autoAlpha: 0 }, 1)
+    // el borde amarillo de arriba de la bisagra se va recién con la tapa abierta: no asoma el fondo crema
+    .fromTo('.caja__escena', { '--tira': 1 }, { '--tira': 0, duration: .25 }, .9)
     .fromTo('[data-adentro-titulo] span', { yPercent: 60, opacity: 0 }, { yPercent: 0, opacity: 1, stagger: .1, duration: .5, ease: 'power2.out' }, .7)
     .addLabel('abierta', 1.1);
   // los alfajores caen uno por uno y rebotan al apoyarse
@@ -159,10 +161,6 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
       3 + i * .08);
   });
   caja.to({}, { duration: .6 });
-
-  // el botón y el foco con teclado abren la caja
-  const abrir = () => irA(aScroll(caja, 'abierta'));
-  $('[data-abrir-caja]').addEventListener('click', abrir);
 
   /* cinta: corre sola y acelera con la velocidad del scroll */
   const cinta = gsap.to('[data-cinta]', { xPercent: -50, duration: 22, ease: 'none', repeat: -1 });
@@ -184,29 +182,31 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
   const botonesIndice = $$('[data-indice] [data-ir-panel]');
   const inicios = paneles.map((_, i) => .5 + i * 1.4);
   const lineas = gsap.timeline({
+    // el índice marca la línea que está a la vista; va en el timeline (no en el scroll) porque
+    // con scrub la animación llega después que el scroll y el índice quedaba un panel atrás
+    onUpdate: () => {
+      const ahora = lineas.time();
+      const activa = inicios.reduce((a, t, i) => (ahora >= t + .5 ? i : a), -1);
+      botonesIndice.forEach((b, i) => {
+        const era = b.getAttribute('aria-current') === 'true';
+        if (era === (i === activa)) return;
+        b.setAttribute('aria-current', String(i === activa));
+        // en el celu el índice se desliza: la línea activa queda siempre a la vista
+        if (i === activa) b.parentElement.scrollTo({ left: b.offsetLeft - (b.parentElement.clientWidth - b.offsetWidth) / 2, behavior: 'smooth' });
+      });
+    },
     scrollTrigger: {
-      trigger: '[data-lineas]', start: 'top top', end: () => `+=${paneles.length * 85}%`, pin: true, scrub: .8, anticipatePin: 1, invalidateOnRefresh: true,
-      // el índice marca la línea que está a la vista
-      onUpdate: () => {
-        const ahora = lineas.time();
-        const activa = inicios.reduce((a, t, i) => (ahora >= t + .5 ? i : a), -1);
-        botonesIndice.forEach((b, i) => {
-          const era = b.getAttribute('aria-current') === 'true';
-          b.setAttribute('aria-current', String(i === activa));
-          // en el celu el índice se desliza: la línea activa queda siempre a la vista
-          if (i === activa && !era) b.parentElement.scrollTo({ left: b.offsetLeft - (b.parentElement.clientWidth - b.offsetWidth) / 2, behavior: 'smooth' });
-        });
-      },
+      trigger: '[data-lineas]', start: 'top top', end: () => `+=${paneles.length * 140}%`, pin: true, scrub: 1.4, anticipatePin: 1, invalidateOnRefresh: true,
     },
   });
   paneles.forEach((panel, i) => {
     const t = .5 + i * 1.4;
     const contenido = $('.panel__contenido', panel);
     // a partir del segundo, cada caja sube desde abajo y tapa a la anterior
-    if (i > 0) lineas.set(panel, { '--t': '100%', '--r': '0%', '--b': '0%', '--l': '0%', '--radio': '0rem' }, t - .01);
+    if (i > 0) lineas.set(panel, { '--t': () => `${panel.offsetHeight}px`, '--r': '0%', '--b': '0px', '--l': '0%', '--radio': '0rem' }, t - .01);
     lineas
       .set(panel, { zIndex: 10 + i }, t - .01)
-      .to(panel, { '--t': '0%', '--r': '0%', '--b': '0%', '--l': '0%', '--radio': '0rem', duration: 1, ease: 'power3.inOut' }, t)
+      .to(panel, { '--t': '0px', '--r': '0%', '--b': '0px', '--l': '0%', '--radio': '0rem', duration: 1, ease: 'power3.inOut' }, t)
       .to($('.panel__tarjeta', panel), { opacity: 0, duration: .25 }, t + .45)
       .fromTo(contenido, { autoAlpha: 0 }, { autoAlpha: 1, duration: .25 }, t + .6)
       .fromTo($('.panel__nombre', panel), { yPercent: 40 }, { yPercent: 0, duration: .5, ease: 'power3.out' }, t + .6)

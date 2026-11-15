@@ -288,7 +288,7 @@ ul, ol { padding: 0; list-style: none; }
 .panel__tarjeta span { font: 900 clamp(1.5rem, 6vw, 2.4rem)/.9 var(--display); text-transform: uppercase; }
 
 .panel__contenido { position: absolute; inset: 0; padding: calc(var(--cabecera) + 1.5rem) var(--margen) 6rem; display: grid; align-content: center; gap: 1rem; justify-items: start; visibility: hidden; }
-.panel__numero { font: 600 .75rem/1 var(--texto); letter-spacing: .14em; color: var(--suave); }
+.panel__numero { font: 600 .75rem/1 var(--texto); letter-spacing: .14em; color: var(--suave); margin-bottom: .6rem; }
 .panel__nombre { font: 900 clamp(3.2rem, 15vw, 11rem)/.82 var(--display); text-transform: uppercase; }
 .panel__dato { font: italic 400 1.2rem/1.3 var(--nota); color: var(--suave); max-width: 24rem; }
 .panel__fotos { display: flex; align-items: flex-end; margin: .5rem 0 .75rem; }

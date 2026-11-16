@@ -101,6 +101,7 @@ function abrirMenu(abrir) {
   menu.hidden = !abrir;
   document.body.style.overflow = abrir ? 'hidden' : '';
   if (lenis) abrir ? lenis.stop() : lenis.start();
+  if (abrir) $('nav a', menu).focus({ preventScroll: true });
   if (abrir && !sinMovimiento && window.gsap) gsap.from($$('nav a', menu), { yPercent: 60, opacity: 0, duration: .5, stagger: .06, ease: 'power3.out' });
 }
 botonMenu.addEventListener('click', () => abrirMenu(menu.hidden));
@@ -262,7 +263,7 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
       });
     },
     scrollTrigger: {
-      trigger: '[data-lineas]', start: 'top top', end: () => `+=${paneles.length * 140}%`, pin: true, scrub: 1.4, anticipatePin: 1, invalidateOnRefresh: true,
+      trigger: '[data-lineas]', start: 'top top', end: () => `+=${paneles.length * 115}%`, pin: true, scrub: 1.4, anticipatePin: 1, invalidateOnRefresh: true,
     },
   });
   paneles.forEach((panel, i) => {
@@ -396,14 +397,18 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
   encajarRegalos();
   ScrollTrigger.addEventListener('refreshInit', encajarRegalos);
 
+  // mientras la sección sube, el muro ya se asoma tenue: así no hay una pantalla crema vacía entre el mundo y los regalos
+  gsap.fromTo(muro, { opacity: 0 }, { opacity: .3, ease: 'none', immediateRender: false, scrollTrigger: { trigger: regalos, start: 'top 85%', end: 'top top', scrub: true } });
+  const regalosCelu = matchMedia('(max-width: 55.99rem)').matches;
+
   const escenaRegalos = gsap.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: regalos, start: 'top top', end: '+=320%', pin: true, scrub: 1, invalidateOnRefresh: true },
+    scrollTrigger: { trigger: regalos, start: 'top top', end: regalosCelu ? '+=300%' : '+=260%', pin: true, scrub: 1, invalidateOnRefresh: true },
   })
     // 1 · las letras
     // el muro no existe hasta que la sección queda anclada: así no se ve el borde cortado al entrar
     .fromTo(muro, { xPercent: -50, yPercent: -50, rotation: -26, scale: .62 }, { rotation: -90, scale: 1.15, duration: 1, ease: 'power2.inOut' }, 0)
-    .fromTo(muro, { opacity: 0 }, { opacity: 1, duration: .7, ease: 'power1.in' }, 0)
+    .fromTo(muro, { opacity: .3 }, { opacity: 1, duration: .5, ease: 'power1.in' }, 0)
     .fromTo(regalos, { backgroundColor: '#FFF6DE' }, { backgroundColor: '#DA2A1C', duration: .6, ease: 'power1.inOut' }, .15)
     .fromTo(filasMuro, { xPercent: (i) => (i % 2 ? -12 : 12) }, { xPercent: (i) => (i % 2 ? 22 : -22), duration: 3.6 }, 0)
     .to(muro, { scale: 4.2, opacity: 0, duration: .6, ease: 'power2.in' }, 1)
@@ -416,11 +421,19 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
   //     de abajo hacia arriba (la foto) y después aparecen su número, el texto y el link
   const pista = $('.etiquetas');
   const finPista = () => Math.min(0, contenidoRegalos.clientWidth - pista.scrollWidth);
-  escenaRegalos.fromTo(pista, { x: () => innerWidth * .55 }, { x: finPista, duration: 2.4, ease: 'power2.out' }, 1.75);
+  // en el celu entra una pieza por pantalla: llega, se queda quieta para leerla y le deja el lugar a la siguiente
+  const paso = () => etiquetas[1].offsetLeft - etiquetas[0].offsetLeft;
+  const llegada = (i) => (regalosCelu ? 1.75 + i * 1 : 1.9 + i * .5);
+  if (regalosCelu) {
+    escenaRegalos.fromTo(pista, { x: () => innerWidth }, { x: 0, duration: .5, ease: 'power3.out' }, 1.75);
+    etiquetas.slice(1).forEach((_, k) => escenaRegalos.to(pista, { x: () => -paso() * (k + 1), duration: .5, ease: 'power3.inOut' }, llegada(k + 1)));
+  } else {
+    escenaRegalos.fromTo(pista, { x: () => innerWidth * .55 }, { x: finPista, duration: 2.4, ease: 'power2.out' }, 1.75);
+  }
   etiquetas.forEach((et, i) => {
     escenaRegalos
-      .fromTo($('img', et), { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: .55, ease: 'power3.out' }, 1.9 + i * .5)
-      .fromTo($$('.etiqueta__nombre, .etiqueta__texto, .etiqueta__ir', et), { y: 18, opacity: 0 }, { y: 0, opacity: 1, stagger: .07, duration: .35, ease: 'power2.out' }, 2.15 + i * .5);
+      .fromTo($('img', et), { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: .55, ease: 'power3.out' }, llegada(i) + .15)
+      .fromTo($$('.etiqueta__nombre, .etiqueta__texto, .etiqueta__ir', et), { y: 18, opacity: 0 }, { y: 0, opacity: 1, stagger: .07, duration: .35, ease: 'power2.out' }, llegada(i) + .35);
   });
   escenaRegalos.to({}, { duration: .6 });
 

@@ -59,14 +59,13 @@ ul, ol { padding: 0; list-style: none; }
 .colgado { display: inline-block; margin-left: -.42em; width: .42em; }
 .hueco { color: var(--hueco-fondo, var(--crema)); -webkit-text-stroke: .09em var(--rojo); paint-order: stroke fill; }
 
-.filtros { position: absolute; width: 0; height: 0; overflow: hidden; }
 .boton { position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; min-height: 3.25rem; padding: 0 1.5rem; border: 2px solid transparent; border-radius: 999px; font: 700 .95rem/1 var(--texto); text-decoration: none; white-space: nowrap; transition: background .25s, color .25s, border-color .25s, transform .25s var(--curva); }
 .boton:active { transform: scale(.97); }
 /* cada variante dice de qué color es su tinta (--liquido) y cómo queda el texto encima (--sobre) */
 .boton--rojo { background: var(--rojo); color: var(--crema); --liquido: var(--choco); --sobre: var(--amarillo); }
 .boton--linea { border-color: var(--choco); color: var(--choco); --liquido: var(--choco); --sobre: var(--amarillo); }
 .boton--oro { background: var(--oro); color: var(--choco); --liquido: var(--crema); --sobre: var(--choco); }
-.boton--tinta { background: var(--tinta); color: var(--fondo); --liquido: var(--fondo); --sobre: var(--tinta); box-shadow: inset 0 0 0 2px var(--tinta); }
+.boton--tinta { background: var(--tinta); color: var(--boton-texto, var(--fondo)); --liquido: var(--fondo); --sobre: var(--tinta); box-shadow: inset 0 0 0 2px var(--tinta); }
 /* sin tinta (celular o movimiento reducido): el hover de siempre */
 .boton--rojo:not(.es-liquido):hover { background: var(--rojo-hondo); }
 .boton--linea:not(.es-liquido):hover { background: var(--choco); color: var(--amarillo); }
@@ -76,8 +75,8 @@ ul, ol { padding: 0; list-style: none; }
 .boton__liquido {
   position: absolute; z-index: -1; left: var(--x, 50%); top: var(--y, 50%);
   width: var(--d, 30rem); height: var(--d, 30rem); margin: calc(var(--d, 30rem) / -2) 0 0 calc(var(--d, 30rem) / -2);
-  border-radius: 50%; background: var(--liquido, var(--choco)); filter: url(#tinta-liquida);
-  transform: scale(0); transition: transform .7s cubic-bezier(.3, .9, .25, 1); pointer-events: none;
+  border-radius: 50%; background: var(--liquido, var(--choco));
+  transform: scale(.01); transition: transform .7s cubic-bezier(.3, .9, .25, 1); pointer-events: none;
 }
 .es-liquido { transition: color .35s .05s, border-color .35s, background .3s, transform .35s var(--curva), box-shadow .35s var(--curva); }
 .es-liquido.lleno { color: var(--sobre); background-color: var(--liquido); transition-delay: .05s, 0s, .3s, 0s, 0s; }
@@ -344,11 +343,11 @@ ul, ol { padding: 0; list-style: none; }
 .panel__fotos img { width: clamp(6.5rem, 28vw, 18rem); filter: drop-shadow(0 22px 26px rgba(0, 0, 0, .3)); }
 
 /* lo que el cliente viene a buscar: qué hay, cuánto sale y comprarlo en un toque */
-.panel__lista { width: 100%; max-width: 30rem; border-top: 1px solid color-mix(in srgb, var(--tinta) 30%, transparent); }
+.panel__lista { color: var(--lista, var(--tinta)); width: 100%; max-width: 30rem; border-top: 1px solid color-mix(in srgb, var(--tinta) 30%, transparent); }
 .panel__lista a { display: grid; grid-template-columns: 1fr auto auto; grid-template-rows: auto auto; column-gap: 1rem; row-gap: .15rem; align-items: center; padding: .75rem 0; border-bottom: 1px solid color-mix(in srgb, var(--tinta) 30%, transparent); text-decoration: none; }
 .panel__item-nombre { font-weight: 700; }
 .panel__item-detalle { grid-row: 2; font-size: .82rem; opacity: .75; }
-.panel__item-precio { grid-row: 1 / span 2; font: 800 1.35rem/1 var(--display); }
+.panel__item-precio { color: var(--tinta); grid-row: 1 / span 2; font: 800 1.35rem/1 var(--display); }
 .panel__lista svg { grid-row: 1 / span 2; transition: transform .3s var(--curva); }
 .panel__lista a:hover svg { transform: translateX(.3rem); }
 .panel__pie { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.25rem; margin-top: .75rem; }
@@ -376,7 +375,7 @@ ul, ol { padding: 0; list-style: none; }
   .panel__pie { margin-top: .4rem; }
 }
 @media (max-width: 63.99rem) and (max-height: 700px) {
-  .panel__numero, .panel__envio { display: none; }
+  .panel__envio { display: none; }
   .panel__fotos img { height: 11svh; }
 }
 .panel__fotos img:nth-child(1) { transform: rotate(-6deg); }
@@ -400,8 +399,8 @@ ul, ol { padding: 0; list-style: none; }
   .panel__contenido { grid-template-columns: minmax(0, 30rem) minmax(0, 1fr); column-gap: clamp(3rem, 6vw, 7rem); align-content: safe center; justify-content: center; row-gap: .7rem; padding: calc(var(--cabecera) + 1.5rem) clamp(2rem, 7vw, 8rem) 5.5rem; }
   .panel__contenido > :not(.panel__fotos) { grid-column: 1; }
   .panel__nombre { font-size: clamp(3.4rem, min(8.5vw, 15svh), 9rem); }
-  /* las fotos ocupan exactamente las 5 filas del texto: así el bloque queda centrado igual en todas las líneas */
-  .panel__fotos { grid-column: 2; grid-row: 1 / 6; align-self: center; justify-self: center; margin: 0; }
+  /* las fotos ocupan exactamente las 4 filas del texto: así el bloque queda centrado igual en todas las líneas */
+  .panel__fotos { grid-column: 2; grid-row: 1 / 5; align-self: center; justify-self: center; margin: 0; }
   .panel__fotos img { width: clamp(11rem, min(17vw, 38svh), 19rem); }
 }
 /* compu con pantalla baja: todo un poco más compacto para que no lo corte el nav */
@@ -539,9 +538,8 @@ ul, ol { padding: 0; list-style: none; }
   filter: drop-shadow(0 22px 22px rgba(42, 23, 16, .35));
   transition: translate .6s var(--curva);
 }
-/* "01 — Gift cards": el número chico y el nombre, como el pie de foto de una revista */
+/* el nombre, como el pie de foto de una revista */
 .etiqueta__nombre { display: flex; align-items: baseline; gap: .7rem; font: 800 1.45rem/1 var(--display); text-transform: uppercase; letter-spacing: .02em; }
-.etiqueta__nombre::before { content: counter(regalo, decimal-leading-zero) " —"; font: 600 .72rem/1 var(--texto); letter-spacing: .14em; opacity: .7; }
 .etiqueta__texto { font: 400 .92rem/1.45 var(--texto); color: rgba(255, 246, 222, .78); max-width: 30ch; }
 .etiqueta__ir { display: inline-flex; align-items: center; gap: .45rem; width: fit-content; margin-top: .2rem; padding-bottom: .3rem; border-bottom: 1px solid rgba(255, 246, 222, .5); font: 700 .74rem/1 var(--texto); text-transform: uppercase; letter-spacing: .12em; transition: border-color .3s; }
 .etiqueta__ir svg { width: 1.05em; height: 1.05em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: translate .3s var(--curva); }
@@ -596,7 +594,7 @@ ul, ol { padding: 0; list-style: none; }
 .pie__base { position: relative; margin: 4rem 0 1.5rem; padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2.5rem); border: 2px solid var(--rojo); display: grid; gap: clamp(.8rem, 2vw, 1.4rem); justify-items: center; overflow: hidden; }
 .pie__base::before { content: ""; position: absolute; inset: 5px; border: 1px solid var(--rojo); pointer-events: none; }
 .pie__base img { width: 100%; }
-.pie__canto { font: 600 .66rem/1.3 var(--texto); letter-spacing: .2em; text-transform: uppercase; color: var(--oro); text-align: center; }
+.pie__canto { text-wrap: balance; font: 600 .66rem/1.3 var(--texto); letter-spacing: .2em; text-transform: uppercase; color: var(--oro); text-align: center; }
 .pie__legal { display: grid; gap: .35rem; font-size: .8rem; color: rgba(255, 246, 222, .55); border-top: 1px solid rgba(255, 246, 222, .15); padding-top: 1.25rem; }
 
 @media (min-width: 64rem) {
@@ -618,4 +616,20 @@ ul, ol { padding: 0; list-style: none; }
   .panel { position: relative; clip-path: inset(0 round 1rem); min-height: 80svh; }
   .panel__tarjeta, .indice { display: none; }
   .panel__contenido { position: relative; visibility: visible; }
+}
+
+/* ---------- ajustes de la auditoría (2026-11-16) ---------- */
+
+/* dedo: chips y zonas de al menos 44px de alto */
+@media (pointer: coarse) {
+  .chips button, .chips a { min-height: 2.75rem; }
+  .mas-zonas { min-height: 2.75rem; }
+}
+
+/* regalos en el celu: una pieza por pantalla, entera, sin escalera ni restos de la anterior en el borde */
+@media (max-width: 55.99rem) {
+  .regalos.con-escena .etiquetas { gap: var(--margen); }
+  .regalos.con-escena .etiqueta { width: calc(100vw - var(--margen) * 2); }
+  .regalos.con-escena .etiqueta:nth-child(n) { margin-bottom: 0; }
+  .regalos.con-escena .etiqueta img { aspect-ratio: 4 / 3; }
 }

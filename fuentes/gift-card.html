@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- Escena de la gift card: se abre con un servidor local, se captura con fondo transparente (zoom 1.4) y se recorta a img/gift-card.webp -->
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@900&family=Newsreader:ital,opsz,wght@1,6..72,400&family=Schibsted+Grotesk:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* escena de la gift card: dos tarjetas apoyadas, como los productos recortados del sitio */
+  :root { --amarillo: #FFCC00; --rojo: #DA2A1C; --choco: #2A1710; --crema: #FFF6DE; }
+  html, body { margin: 0; background: transparent; }
+  .escena { width: 900px; height: 700px; position: relative; perspective: 1600px; }
+  .tarjeta {
+    position: absolute; width: 540px; height: 341px; border-radius: 22px; overflow: hidden;
+    box-shadow: 0 2px 0 rgba(0,0,0,.08) inset;
+  }
+  .sombra { position: absolute; inset: 0; filter: drop-shadow(0 30px 30px rgba(42, 23, 16, .35)) drop-shadow(0 6px 8px rgba(42, 23, 16, .2)); }
+
+  /* dorso: rojo con el patrón de los pouches, HAVANNA llena y hueca */
+  .dorso { left: 250px; top: 120px; background: var(--choco); transform: rotateX(18deg) rotateZ(12deg) rotateY(-14deg); }
+  .dorso .patron { position: absolute; inset: -40px -60px; display: grid; gap: 4px; transform: rotate(-8deg); }
+  .dorso .patron p { margin: 0; white-space: nowrap; font: 900 64px/.9 "Big Shoulders Display"; text-transform: uppercase; color: var(--amarillo); }
+  .dorso .patron p:nth-child(even) { margin-left: -110px; }
+  .dorso .patron span { margin-right: 18px; }
+  .dorso .patron .hueca { color: var(--choco); -webkit-text-stroke: 4px var(--amarillo); paint-order: stroke fill; }
+
+  /* frente: el frente de la caja amarilla en chico */
+  .frente { left: 110px; top: 200px; background: var(--amarillo); transform: rotateX(22deg) rotateZ(-9deg) rotateY(10deg); }
+  .marco { position: absolute; inset: 16px; border: 3px solid var(--rojo); border-radius: 8px; }
+  .marco::before { content: ""; position: absolute; inset: 6px; border: 1.5px solid var(--rojo); border-radius: 4px; }
+  .centro { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; padding-bottom: 14px; }
+  .centro img { width: 380px; }
+  .lema { font: italic 400 30px/1 "Newsreader"; color: var(--choco); }
+  .canto { position: absolute; bottom: 36px; font: 600 11px/1 "Schibsted Grotesk"; letter-spacing: .2em; text-transform: uppercase; color: var(--rojo); }
+  .canto--izq { left: 40px; } .canto--der { right: 40px; }
+  /* un brillo suave de plástico, para que se lea como tarjeta y no como dibujo */
+  .brillo { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.16) 42%, transparent 55%); pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="escena">
+  <div class="sombra">
+    <div class="tarjeta dorso">
+      <div class="patron">
+        <p><span>Havanna</span><span class="hueca">Havanna</span><span>Havanna</span><span class="hueca">Havanna</span></p>
+        <p><span class="hueca">Havanna</span><span>Havanna</span><span class="hueca">Havanna</span><span>Havanna</span></p>
+        <p><span>Havanna</span><span class="hueca">Havanna</span><span>Havanna</span><span class="hueca">Havanna</span></p>
+        <p><span class="hueca">Havanna</span><span>Havanna</span><span class="hueca">Havanna</span><span>Havanna</span></p>
+        <p><span>Havanna</span><span class="hueca">Havanna</span><span>Havanna</span><span class="hueca">Havanna</span></p>
+        <p><span class="hueca">Havanna</span><span>Havanna</span><span class="hueca">Havanna</span><span>Havanna</span></p>
+      </div>
+      <div class="brillo"></div>
+    </div>
+    <div class="tarjeta frente">
+      <div class="marco"></div>
+      <div class="centro">
+        <img src="../img/logo.png" alt="">
+        <p class="lema">Gift card</p>
+      </div>
+      <p class="canto canto--izq">Mar del Plata</p>
+      <p class="canto canto--der">Desde 1947</p>
+      <div class="brillo"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -232,7 +232,7 @@ ul, ol { padding: 0; list-style: none; }
 }
 
 /* celu acostado: poco alto; logo y alfajor más chicos y los botones en fila */
-@media (max-width: 63.99rem) and (orientation: landscape) and (max-height: 32rem) {
+@media (max-width: 63.99rem) and (orientation: landscape) and (max-height: 40rem) {
   .frente { padding-top: calc(var(--cabecera) + 1rem); padding-bottom: calc(1.25rem + var(--sobra)); }
   .frente__titulo { gap: .4rem; }
   .frente__logo { width: min(62vw, 70svh); }
@@ -484,7 +484,7 @@ ul, ol { padding: 0; list-style: none; }
   .flotan img { left: calc(50% + var(--x) * .78); width: calc(var(--w) * .72); margin: calc(var(--w) * -.25) 0 0 calc(var(--w) * -.36); }
 }
 /* celu acostado: no hay alto para apilar, van lado a lado como en la compu */
-@media (max-width: 63.99rem) and (orientation: landscape) and (max-height: 32rem) {
+@media (max-width: 63.99rem) and (orientation: landscape) and (max-height: 40rem) {
   .leo.con-tapa { grid-template-columns: 1.1fr .9fr; grid-template-rows: none; align-items: center; gap: 1.5rem; }
   .leo.con-tapa .leo__texto { align-content: center; }
   .leo.con-tapa .leo__titulo-grande { font-size: clamp(2.2rem, 13svh, 3.6rem); }
@@ -524,55 +524,63 @@ ul, ol { padding: 0; list-style: none; }
 
 @media (min-width: 64rem) { .mundo { grid-template-columns: 1fr 1fr; align-items: center; padding-block: 5rem; gap: 3rem; max-width: 72rem; margin-inline: auto; } }
 
-/* ---------- 8 · regalos: etiquetas de regalo ---------- */
+/* ---------- 8 · regalos: piezas editoriales en escalera ---------- */
 
 .regalos { background: var(--rojo); color: var(--crema); padding: 5rem var(--margen) 5.5rem; overflow: hidden; }
 .regalos__cabeza { display: grid; gap: .6rem; }
 .regalos__bajada { font: italic 400 1.2rem/1.3 var(--nota); opacity: .9; }
-.etiquetas { display: grid; gap: 1.1rem; margin-top: 2.5rem; }
-.etiqueta { --g: 0deg; position: relative; transform: rotate(calc(var(--g) * .4)); transition: transform .7s var(--curva); }
-/* celu: etiqueta acostada, el ojal a la izquierda */
-.etiqueta a {
-  position: relative; display: grid; grid-template-columns: 5.5rem 1fr; grid-template-rows: auto auto auto; column-gap: 1rem; row-gap: .2rem; align-items: center;
-  background: var(--crema); color: var(--choco); text-decoration: none;
-  padding: 1.1rem 1.25rem 1.1rem 2.75rem;
-  clip-path: polygon(1.6rem 0, 100% 0, 100% 100%, 1.6rem 100%, 0 50%);
+.etiquetas { counter-reset: regalo; display: grid; gap: 2.75rem; margin-top: 2.5rem; padding: 0; list-style: none; }
+.etiqueta { counter-increment: regalo; }
+.etiqueta a { display: grid; gap: .6rem; color: inherit; text-decoration: none; }
+.etiqueta__ojal { display: none; }
+/* la foto: el producto suelto sobre el rojo, apoyado con una sombra suave */
+.etiqueta img {
+  display: block; width: 100%; aspect-ratio: 5 / 4; object-fit: contain; padding: 4% 6%; margin-bottom: .35rem;
+  filter: drop-shadow(0 22px 22px rgba(42, 23, 16, .35));
+  transition: translate .6s var(--curva);
 }
-/* filete interno punteado, como el troquel de una etiqueta */
-.etiqueta a::after { content: ""; position: absolute; inset: .45rem .45rem .45rem 1.9rem; border: 1px dashed rgba(42, 23, 16, .28); pointer-events: none; }
-.etiqueta__ojal { position: absolute; left: .85rem; top: 50%; width: .8rem; height: .8rem; border-radius: 50%; background: var(--rojo); transform: translateY(-50%); box-shadow: inset 0 0 0 2px var(--oro); }
-.etiqueta img { grid-row: 1 / span 3; width: 100%; height: 4.5rem; object-fit: contain; filter: drop-shadow(0 8px 10px rgba(42, 23, 16, .25)); transition: transform .5s var(--curva); }
-.etiqueta__nombre { font: 900 1.9rem/.9 var(--display); text-transform: uppercase; color: var(--rojo); }
-.etiqueta__texto { font: italic 400 1rem/1.25 var(--nota); color: var(--choco-medio); }
-.etiqueta__ir { display: inline-flex; align-items: center; gap: .35rem; font: 700 .85rem/1 var(--texto); margin-top: .35rem; }
-.etiqueta__ir svg { width: 1.05em; height: 1.05em; transition: transform .3s var(--curva); }
-.etiqueta:hover { transform: rotate(0deg); }
-.etiqueta:hover img { transform: scale(1.06) rotate(-3deg); }
-.etiqueta:hover .etiqueta__ir svg { transform: translateX(.25rem); }
+/* "01 — Gift cards": el número chico y el nombre, como el pie de foto de una revista */
+.etiqueta__nombre { display: flex; align-items: baseline; gap: .7rem; font: 800 1.45rem/1 var(--display); text-transform: uppercase; letter-spacing: .02em; }
+.etiqueta__nombre::before { content: counter(regalo, decimal-leading-zero) " —"; font: 600 .72rem/1 var(--texto); letter-spacing: .14em; opacity: .7; }
+.etiqueta__texto { font: 400 .92rem/1.45 var(--texto); color: rgba(255, 246, 222, .78); max-width: 30ch; }
+.etiqueta__ir { display: inline-flex; align-items: center; gap: .45rem; width: fit-content; margin-top: .2rem; padding-bottom: .3rem; border-bottom: 1px solid rgba(255, 246, 222, .5); font: 700 .74rem/1 var(--texto); text-transform: uppercase; letter-spacing: .12em; transition: border-color .3s; }
+.etiqueta__ir svg { width: 1.05em; height: 1.05em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: translate .3s var(--curva); }
+.etiqueta a:focus-visible { outline: 2px solid var(--crema); outline-offset: 6px; }
+@media (hover: hover) {
+  .etiqueta a:hover img { translate: 0 -.5rem; }
+  .etiqueta a:hover .etiqueta__ir { border-color: var(--crema); }
+  .etiqueta a:hover .etiqueta__ir svg { translate: .3rem 0; }
+}
 
-/* compu: tres etiquetas colgadas de un hilo, se balancean al pasar */
+/* compu sin movimiento: las tres en escalera, cada una un poco más arriba que la anterior */
 @media (min-width: 56rem) {
   .regalos { padding-block: 6.5rem 7.5rem; }
   .regalos__cabeza { grid-template-columns: auto 1fr; align-items: end; column-gap: 2rem; }
-  .etiquetas { grid-template-columns: repeat(3, 1fr); gap: 2.5rem; margin-top: 3rem; align-items: start; }
-  .etiqueta { padding-top: 3.5rem; transform: rotate(var(--g)); transform-origin: 50% 0; }
-  .etiqueta:nth-child(2) { margin-top: 2rem; }
-  .etiqueta::before { content: ""; position: absolute; left: 50%; top: 0; width: 1.5px; height: 4.6rem; background: var(--crema); z-index: 2; }
-  .etiqueta:hover { transform: rotate(calc(var(--g) * -.6)); }
-  .etiqueta a {
-    grid-template-columns: 1fr; justify-items: center; text-align: center; row-gap: .55rem;
-    padding: 2.6rem 1.75rem 2rem;
-    clip-path: polygon(22% 0, 78% 0, 100% 3.2rem, 100% 100%, 0 100%, 0 3.2rem);
-  }
-  /* el troquel punteado arranca debajo de los cortes de las esquinas */
-  .etiqueta a::after { inset: 3.4rem .55rem .55rem; }
-  .etiqueta__ojal { left: 50%; top: 1rem; transform: translateX(-50%); }
-  .etiqueta img { grid-row: auto; height: 9rem; margin: .5rem 0 .25rem; }
-  .etiqueta__nombre { font-size: clamp(2.2rem, 3.2vw, 3rem); }
-  .etiqueta__texto { font-size: 1.1rem; }
+  .etiquetas { grid-template-columns: repeat(3, 1fr); align-items: end; gap: clamp(1.5rem, 3.5vw, 3.5rem); margin-top: 3rem; }
+  .etiqueta:nth-child(2) { margin-bottom: 3.5rem; }
+  .etiqueta:nth-child(3) { margin-bottom: 7rem; }
+}
+
+/* con movimiento: una fila más ancha que la pantalla que entra desde la derecha */
+.regalos.con-escena .etiquetas { display: flex; align-items: flex-end; width: max-content; gap: clamp(1.5rem, 4vw, 3.5rem); margin-top: 2rem; }
+.regalos.con-escena .etiqueta { width: clamp(14.5rem, 68vw, 18rem); margin: 0; }
+.regalos.con-escena .etiqueta:nth-child(2) { margin-bottom: 2.25rem; }
+.regalos.con-escena .etiqueta:nth-child(3) { margin-bottom: 4.5rem; }
+@media (min-width: 56rem) {
+  .regalos.con-escena .etiqueta { width: clamp(15rem, 27vw, 25rem); }
+  .regalos.con-escena .etiqueta:nth-child(2) { margin-bottom: 3.5rem; }
+  .regalos.con-escena .etiqueta:nth-child(3) { margin-bottom: 7rem; }
 }
 
 /* ---------- pie ---------- */
+
+/* ---------- entrada a regalos ---------- */
+.paso__muro { display: none; }
+/* con movimiento la sección queda anclada a pantalla completa: el muro va de fondo y el contenido se centra */
+.regalos.con-escena { position: relative; height: 100lvh; display: grid; grid-template-columns: minmax(0, 1fr); align-content: center; justify-items: center; padding-block: calc(var(--cabecera) + 1rem) calc(1rem + 100lvh - 100svh); }
+.regalos.con-escena .regalos__contenido { position: relative; z-index: 1; width: 100%; min-width: 0; transform-origin: 50% 50%; }
+.regalos.con-escena .paso__muro { position: absolute; left: 50%; top: 50%; display: grid; justify-items: center; will-change: transform; }
+.paso__muro p { margin: 0; white-space: nowrap; font: 900 clamp(4.5rem, 17vmax, 15rem)/.8 var(--display); text-transform: uppercase; letter-spacing: -.01em; color: var(--choco); will-change: transform; }
 
 .pie { background: var(--choco); color: var(--crema); padding: 4rem var(--margen) 1.5rem; overflow: hidden; }
 .pie__columnas { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem 1.5rem; }

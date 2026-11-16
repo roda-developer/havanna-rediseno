@@ -42,6 +42,7 @@ cajaPaises.addEventListener('click', (e) => {
   if (!boton) return;
   $$('[data-pais]', cajaPaises).forEach((b) => b.setAttribute('aria-pressed', String(b === boton)));
   mostrarZonas(boton.dataset.pais);
+  elegirEnOrbita(boton.dataset.pais);
 });
 masZonas.addEventListener('click', () => {
   const ocultas = $$('a[hidden]', cajaZonas);
@@ -57,8 +58,34 @@ mostrarZonas('Argentina');
 const anillo = $('[data-anillo]');
 anillo.innerHTML = paises.map((p, i) => `<span class="${i === 0 ? 'es-origen' : ''}" style="--a:${i * 45}deg">${p}</span>`).join('');
 anillo.style.setProperty('--giro', '0deg');
+anillo.style.setProperty('--eleccion', '0deg');
 $$('span', anillo).forEach((s) => {
-  s.style.transform = 'rotate(calc(var(--a) + var(--giro))) translateY(calc(var(--radio-orbita) * -1)) rotate(calc((var(--a) + var(--giro)) * -1)) translate(-50%, -50%)';
+  s.style.transform = 'rotate(calc(var(--a) + var(--giro) + var(--eleccion))) translateY(calc(var(--radio-orbita) * -1)) rotate(calc((var(--a) + var(--giro) + var(--eleccion)) * -1)) translate(-50%, -50%)';
+});
+// al elegir un país se pinta de rojo y la órbita gira hasta dejarlo arriba, dando una vuelta de más
+let eleccion = 0;
+function elegirEnOrbita(pais) {
+  const i = paises.indexOf(pais);
+  if (i < 0) return;
+  $$('span', anillo).forEach((s, k) => s.classList.toggle('es-origen', k === i));
+  // a partir de la primera elección la órbita deja de girar con el scroll
+  if (anillo.giroScroll) { anillo.giroScroll.scrollTrigger?.kill(); anillo.giroScroll.kill(); anillo.giroScroll = null; }
+  const giro = parseFloat(anillo.style.getPropertyValue('--giro')) || 0;
+  // ángulo que lleva al país a la cima, por el camino más corto (sin vueltas de más)
+  let destino = -(i * 45 + giro);
+  destino += Math.round((eleccion - destino) / 360) * 360;
+  eleccion = destino;
+  if (window.gsap && !sinMovimiento) {
+    gsap.to(anillo, { '--eleccion': `${destino}deg`, duration: 2, ease: 'sine.inOut' });
+  } else {
+    anillo.style.setProperty('--eleccion', `${destino}deg`);
+  }
+}
+// tocar un país en la órbita es lo mismo que elegirlo en los botones
+anillo.addEventListener('click', (e) => {
+  const s = e.target.closest('span');
+  if (!s) return;
+  $(`[data-pais="${s.textContent}"]`, cajaPaises)?.click();
 });
 
 /* ---------- cabecera y menú ---------- */
@@ -87,6 +114,45 @@ const marcarCabecera = () => {
 };
 addEventListener('scroll', marcarCabecera, { passive: true });
 marcarCabecera();
+
+/* ---------- botones de tinta líquida ---------- */
+// con mouse, la tinta entra por donde entra el cursor y sale por donde se va; al tocar, onda y rebote
+if (!sinMovimiento) {
+  const punto = (b, e) => { const r = b.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top, r]; };
+  $$('.boton').forEach((b) => {
+    if (conMouse) {
+      const tinta = document.createElement('span');
+      tinta.className = 'boton__liquido';
+      tinta.setAttribute('aria-hidden', 'true');
+      b.prepend(tinta);
+      b.classList.add('es-liquido');
+      const ubicar = (e) => {
+        const [x, y, r] = punto(b, e);
+        // el círculo tiene que tapar el botón entero desde cualquier punto de entrada
+        b.style.setProperty('--d', `${Math.ceil(Math.hypot(r.width, r.height) * 2.3)}px`);
+        b.style.setProperty('--x', `${x}px`);
+        b.style.setProperty('--y', `${y}px`);
+      };
+      b.addEventListener('pointerenter', (e) => { ubicar(e); requestAnimationFrame(() => b.classList.add('lleno')); });
+      b.addEventListener('pointerleave', (e) => { ubicar(e); b.classList.remove('lleno'); });
+      b.addEventListener('focus', () => { if (b.matches(':focus-visible')) b.classList.add('lleno'); });
+      b.addEventListener('blur', () => b.classList.remove('lleno'));
+    }
+    b.addEventListener('pointerdown', (e) => {
+      const [x, y, r] = punto(b, e);
+      const onda = document.createElement('span');
+      onda.className = 'boton__onda';
+      onda.setAttribute('aria-hidden', 'true');
+      onda.style.cssText = `left:${x}px;top:${y}px;--hasta:${Math.ceil(Math.hypot(r.width, r.height) / 6)}`;
+      b.append(onda);
+      onda.addEventListener('animationend', () => onda.remove());
+      b.classList.remove('rebote');
+      void b.offsetWidth;
+      b.classList.add('rebote');
+    });
+    b.addEventListener('animationend', (e) => { if (e.animationName === 'rebote') b.classList.remove('rebote'); });
+  });
+}
 
 /* ---------- movimiento ---------- */
 // Dentro de timelines con invalidateOnRefresh se usa fromTo, nunca from:
@@ -221,38 +287,90 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
     irA(aScroll(lineas, `linea${b.dataset.irPanel}`));
   }));
 
-  /* 5 · leo: el pouch sube y sigue al mouse ------------------------------ */
-  gsap.fromTo('[data-pouch]', { y: 140, rotationY: -35, rotation: -6, opacity: 0 }, {
-    y: 0, rotationY: 0, rotation: 0, opacity: 1, transformPerspective: 900, ease: 'power3.out', duration: 1.4,
-    scrollTrigger: { trigger: '[data-leo]', start: 'top 70%' },
+  /* 5 · leo: una tapa amarilla se borra con un garabato y aparece la sección;
+     después el pouch sube y sigue al mouse ---------------------------------- */
+  const leo = $('[data-leo]');
+  const tapa = $('[data-leo-tapa]');
+  const garabato = $('[data-garabato]');
+  // el garabato está dibujado en 1600×900: se estira al tamaño real de la tapa
+  const ajustarGarabato = () => {
+    const r = tapa.getBoundingClientRect();
+    garabato.setAttribute('transform', `scale(${r.width / 1600} ${r.height / 900})`);
+  };
+  leo.classList.add('con-tapa');
+  ajustarGarabato();
+  addEventListener('resize', ajustarGarabato);
+  gsap.set(garabato, { attr: { 'stroke-dasharray': '1 1', 'stroke-dashoffset': 0 } });
+
+  // el pouch hace su coreografía con el scroll en todas las pantallas; en el celu el anclaje es un poco más corto
+  const compu = matchMedia('(min-width: 64rem)').matches;
+  const pouch = $('[data-pouch]');
+  const mouse = $('[data-pouch-mouse]');
+  const flotanAtras = $$('[data-flota="atras"]');
+  const flotanAdelante = $$('[data-flota="adelante"]');
+
+  // reflejo: la franja de luz corre por el dorado según cuánto está inclinado (scroll + mouse)
+  let antes = '';
+  gsap.ticker.add(() => {
+    const ry = (gsap.getProperty(pouch, 'rotationY') || 0) + (gsap.getProperty(mouse, 'rotationY') || 0);
+    const clave = ry.toFixed(1);
+    if (clave === antes) return;
+    antes = clave;
+    pouch.style.setProperty('--brillo', `${(130 - (gsap.utils.clamp(-40, 40, ry) + 40) / 80 * 160).toFixed(1)}%`);
   });
-  gsap.fromTo('.leo__luz', { scale: .4, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.4, ease: 'power3.out', scrollTrigger: { trigger: '[data-leo]', start: 'top 70%' } });
-  gsap.from('.leo__texto > *', { y: 40, opacity: 0, stagger: .1, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: '[data-leo]', start: 'top 70%' } });
-  if (conMouse) {
-    const giroY = gsap.quickTo('[data-pouch]', 'rotationY', { duration: .6, ease: 'power3.out' });
-    const giroX = gsap.quickTo('[data-pouch]', 'rotationX', { duration: .6, ease: 'power3.out' });
-    $('[data-vitrina]').addEventListener('pointermove', (e) => {
-      const r = e.currentTarget.getBoundingClientRect();
-      giroY(((e.clientX - r.left) / r.width - .5) * 24);
-      giroX(((e.clientY - r.top) / r.height - .5) * -18);
-    });
-    $('[data-vitrina]').addEventListener('pointerleave', () => { giroY(0); giroX(0); });
+  // en la mano nunca está quieto del todo: un vaivén lento y chico
+  gsap.to(mouse, { y: -9, rotation: .8, duration: 2.8, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+
+  const entradaLeo = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } })
+    .fromTo('.leo__luz', { scale: .4, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.4 }, 0)
+    .fromTo('.leo__texto > *', { y: 40, opacity: 0 }, { y: 0, opacity: 1, stagger: .1, duration: 1 }, .1);
+
+  const leoTl = gsap.timeline({
+    scrollTrigger: {
+      trigger: leo, start: 'top top', end: compu ? '+=300%' : '+=240%', pin: true, scrub: 1, invalidateOnRefresh: true,
+      onUpdate: (st) => { if (st.progress > .22 && !entradaLeo.isActive() && entradaLeo.progress() === 0) entradaLeo.play(); },
+      onLeaveBack: () => entradaLeo.pause(0),
+    },
+  })
+    .fromTo('[data-tapa-marca]', { scale: 1, transformOrigin: '50% 50%' }, { scale: 1.12, duration: .3, ease: 'none' }, 0)
+    // como en un garabato a mano: el trazo se afina y a la vez se va borrando desde donde empezó
+    .fromTo(garabato, { attr: { 'stroke-width': 350 } }, { attr: { 'stroke-width': 0 }, duration: 1, ease: 'none' }, .1)
+    .fromTo(garabato, { attr: { 'stroke-dashoffset': 0 } }, { attr: { 'stroke-dashoffset': -1 }, duration: 1, ease: 'sine.in' }, .1);
+
+  {
+    const vw = (n) => () => innerWidth * n / 100;
+    const vh = (n) => () => innerHeight * n / 100;
+    leoTl
+      // los pouches suben como si alguien los levantara de la mesa: se inclinan hacia un lado,
+      // se acercan un poco a la cámara y se acomodan en una pose de tres cuartos (nunca de perfil)
+      .fromTo(pouch, { x: vw(-10), y: vh(70), rotationY: -38, rotationX: 22, rotation: -12, scale: 1.18 },
+        { x: vw(-2), y: vh(-2), rotationY: 20, rotationX: -8, rotation: 3, scale: 1.06, duration: 1.4, ease: 'power2.out' }, .6)
+      .to(pouch, { x: 0, y: 0, rotationY: -8, rotationX: 4, rotation: -1.5, scale: 1, duration: 1.2, ease: 'sine.inOut' }, 2)
+      // paquetitos que suben y quedan flotando a distintas profundidades
+      .fromTo(flotanAtras, { y: vh(55), z: (i) => [-140, -60, -100, -40][i] || -80, rotation: (i) => [-30, 24, -18, 28][i] || 0, rotationY: (i) => [-35, 30, -25, 35][i] || 0, opacity: 0 },
+        { y: 0, rotation: (i) => [-10, 14, -6, 12][i] || 0, rotationY: (i) => [-14, 16, -10, 14][i] || 0, opacity: 1, duration: 1.4, stagger: .15, ease: 'power2.out' }, .8)
+      .to(flotanAtras, { y: vh(-4), rotation: '+=6', rotationY: '+=10', duration: 1.1, ease: 'none' }, 2.3)
+      // uno grande y desenfocado pasa por delante, cerca de la cámara
+      .fromTo(flotanAdelante, { y: vh(90), z: 160, rotation: -20, rotationY: -25 },
+        { y: vh(-120), rotation: 25, rotationY: 30, duration: 2.2, stagger: .45, ease: 'none' }, .7);
   }
 
-  /* 6 · la receta: la ficha se apoya y cada renglón se tilda al pasar --------- */
-  gsap.fromTo('[data-ficha]', { y: 120, rotation: 4, opacity: 0 }, {
-    y: 0, rotation: -1.2, opacity: 1, duration: 1.2, ease: 'power3.out',
-    scrollTrigger: { trigger: '[data-receta]', start: 'top 70%' },
-  });
-  $$('[data-paso]').forEach((paso) => {
-    gsap.timeline({ scrollTrigger: { trigger: paso, start: 'top 82%' } })
-      .fromTo(paso.querySelector('.receta__cant'), { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: .5, ease: 'power3.out' })
-      .fromTo(paso.querySelector('.receta__txt'), { opacity: 0 }, { opacity: 1, duration: .5 }, '<.1')
-      .fromTo(paso.querySelector('.receta__tilde'), { '--trazo': 60 }, { '--trazo': 0, duration: .45, ease: 'power2.inOut' }, '>-.1');
-  });
+  if (conMouse) {
+    const giroY = gsap.quickTo(mouse, 'rotationY', { duration: .6, ease: 'power3.out' });
+    const giroX = gsap.quickTo(mouse, 'rotationX', { duration: .6, ease: 'power3.out' });
+    // se escucha en toda la sección: la vitrina deja pasar los clics para que se puedan tocar los de atrás
+    const vitrina = $('[data-vitrina]');
+    leo.addEventListener('pointermove', (e) => {
+      const r = vitrina.getBoundingClientRect();
+      giroY(gsap.utils.clamp(-11, 11, ((e.clientX - r.left) / r.width - .5) * 22));
+      giroX(gsap.utils.clamp(-6, 6, ((e.clientY - r.top) / r.height - .5) * -12));
+    });
+    leo.addEventListener('pointerleave', () => { giroY(0); giroX(0); });
+  }
 
   /* 7 · los países giran alrededor del alfajor ------------------------------ */
-  gsap.fromTo(anillo, { '--giro': '-60deg' }, {
+  // se guarda para frenarlo cuando alguien elige un país (si no, el elegido se iría de la cima al bajar)
+  anillo.giroScroll = gsap.fromTo(anillo, { '--giro': '-60deg' }, {
     '--giro': '150deg', ease: 'none',
     scrollTrigger: { trigger: '[data-mundo]', start: 'top bottom', end: 'bottom top', scrub: .8 },
   });
@@ -269,9 +387,10 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
   gsap.fromTo('[data-pie-marca] img', { yPercent: 100 }, { yPercent: 0, ease: 'power3.out', duration: 1.2, scrollTrigger: { trigger: '[data-pie-marca]', start: 'top 95%' } });
 
   addEventListener('load', () => ScrollTrigger.refresh());
-  window.havanna = { aScroll, caja, lineas };
+  window.havanna = { aScroll, caja, lineas, lenis };
 } else {
   cajaAbierta = true;
   marcarCabecera();
   $$('[data-ir-panel]').forEach((b) => b.addEventListener('click', () => $$('[data-panel]')[b.dataset.irPanel].scrollIntoView()));
 }
+

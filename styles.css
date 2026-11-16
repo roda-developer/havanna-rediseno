@@ -59,16 +59,40 @@ ul, ol { padding: 0; list-style: none; }
 .colgado { display: inline-block; margin-left: -.42em; width: .42em; }
 .hueco { color: var(--hueco-fondo, var(--crema)); -webkit-text-stroke: .09em var(--rojo); paint-order: stroke fill; }
 
-.boton { display: inline-flex; align-items: center; justify-content: center; gap: .55rem; min-height: 3.25rem; padding: 0 1.4rem; border: 2px solid transparent; border-radius: .4rem; font: 700 .95rem/1 var(--texto); text-decoration: none; white-space: nowrap; transition: background .25s, color .25s, border-color .25s, transform .25s var(--curva); }
+.filtros { position: absolute; width: 0; height: 0; overflow: hidden; }
+.boton { position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; min-height: 3.25rem; padding: 0 1.5rem; border: 2px solid transparent; border-radius: 999px; font: 700 .95rem/1 var(--texto); text-decoration: none; white-space: nowrap; transition: background .25s, color .25s, border-color .25s, transform .25s var(--curva); }
 .boton:active { transform: scale(.97); }
-.boton--rojo { background: var(--rojo); color: var(--crema); }
-.boton--rojo:hover { background: var(--rojo-hondo); }
-.boton--linea { border-color: var(--choco); color: var(--choco); }
-.boton--linea:hover { background: var(--choco); color: var(--amarillo); }
-.boton--oro { background: var(--oro); color: var(--choco); }
-.boton--oro:hover { background: var(--crema); }
-.boton--tinta { background: var(--tinta); color: var(--fondo); }
-.boton--tinta:hover { transform: translateY(-2px); }
+/* cada variante dice de qué color es su tinta (--liquido) y cómo queda el texto encima (--sobre) */
+.boton--rojo { background: var(--rojo); color: var(--crema); --liquido: var(--choco); --sobre: var(--amarillo); }
+.boton--linea { border-color: var(--choco); color: var(--choco); --liquido: var(--choco); --sobre: var(--amarillo); }
+.boton--oro { background: var(--oro); color: var(--choco); --liquido: var(--crema); --sobre: var(--choco); }
+.boton--tinta { background: var(--tinta); color: var(--fondo); --liquido: var(--fondo); --sobre: var(--tinta); box-shadow: inset 0 0 0 2px var(--tinta); }
+/* sin tinta (celular o movimiento reducido): el hover de siempre */
+.boton--rojo:not(.es-liquido):hover { background: var(--rojo-hondo); }
+.boton--linea:not(.es-liquido):hover { background: var(--choco); color: var(--amarillo); }
+.boton--oro:not(.es-liquido):hover { background: var(--crema); }
+
+/* tinta líquida: un círculo con el borde ondulado que nace donde entra el cursor y llena el botón */
+.boton__liquido {
+  position: absolute; z-index: -1; left: var(--x, 50%); top: var(--y, 50%);
+  width: var(--d, 30rem); height: var(--d, 30rem); margin: calc(var(--d, 30rem) / -2) 0 0 calc(var(--d, 30rem) / -2);
+  border-radius: 50%; background: var(--liquido, var(--choco)); filter: url(#tinta-liquida);
+  transform: scale(0); transition: transform .7s cubic-bezier(.3, .9, .25, 1); pointer-events: none;
+}
+.es-liquido { transition: color .35s .05s, border-color .35s, background .3s, transform .35s var(--curva), box-shadow .35s var(--curva); }
+.es-liquido.lleno { color: var(--sobre); background-color: var(--liquido); transition-delay: .05s, 0s, .3s, 0s, 0s; }
+/* el fondo cambia cuando la tinta ya tapó todo, así no queda un filo del color anterior en el borde */
+.es-liquido.lleno .boton__liquido { transform: scale(1); }
+/* al salir se escurre más rápido */
+.es-liquido:not(.lleno) .boton__liquido { transition-duration: .5s; transition-timing-function: cubic-bezier(.6, 0, .4, 1); }
+/* clic: el botón se aprieta y rebota, y sale una onda desde el dedo */
+.boton.rebote { animation: rebote .5s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes rebote { 0% { scale: 1; } 25% { scale: .93; } 60% { scale: 1.035; } 100% { scale: 1; } }
+.boton__onda {
+  position: absolute; z-index: -1; width: 1rem; height: 1rem; margin: -.5rem 0 0 -.5rem; border-radius: 50%;
+  border: 2px solid currentColor; pointer-events: none; animation: onda .65s cubic-bezier(.2, .7, .1, 1) forwards;
+}
+@keyframes onda { from { transform: scale(0); opacity: .8; } to { transform: scale(var(--hasta, 20)); opacity: 0; } }
 
 .enlace { display: inline-flex; align-items: center; gap: .5rem; font-weight: 700; text-decoration: none; border-bottom: 2px solid currentColor; padding-bottom: .2rem; width: fit-content; }
 .enlace svg { transition: transform .3s var(--curva); }
@@ -89,7 +113,8 @@ ul, ol { padding: 0; list-style: none; }
 .cabecera__logo img { width: 8.5rem; }
 .cabecera__nav { display: none; }
 .boton--tienda { min-height: 2.6rem; padding: 0 .9rem; background: var(--choco); color: var(--amarillo); }
-.boton--tienda:hover { background: var(--rojo); color: var(--crema); }
+.boton--tienda { --liquido: var(--rojo); --sobre: var(--crema); }
+.boton--tienda:not(.es-liquido):hover { background: var(--rojo); color: var(--crema); }
 .cabecera__menu { width: 2.75rem; height: 2.75rem; border: 0; background: none; padding: 0; display: grid; place-content: center; gap: .4rem; cursor: pointer; }
 .cabecera__menu i { display: block; width: 1.6rem; height: 2px; background: var(--choco); transition: transform .35s var(--curva); }
 .cabecera__menu[aria-expanded="true"] i:first-of-type { transform: translateY(.25rem) rotate(45deg); }
@@ -112,17 +137,18 @@ ul, ol { padding: 0; list-style: none; }
 
 /* ---------- 1 · la caja ---------- */
 
-.caja { position: relative; height: 100svh; }
-.caja__escena { position: relative; height: 100svh; overflow: hidden; perspective: 1800px; perspective-origin: 50% calc(var(--cabecera) + .25rem); background: var(--crema); }
+.caja { position: relative; height: 100lvh; }
+.caja__escena { position: relative; height: 100lvh; overflow: hidden; perspective: 1800px; perspective-origin: 50% calc(var(--cabecera) + .25rem); background: var(--crema); }
 /* el borde amarillo de la caja, arriba de la bisagra: se desvanece (--tira) cuando la tapa termina de abrirse */
 .caja__escena::before { content: ""; position: absolute; inset: 0 0 auto; height: calc(var(--cabecera) + .25rem); z-index: 4; background: var(--amarillo); opacity: var(--tira, 1); pointer-events: none; }
 
 /* el frente: igual que la caja real, amarillo con filete doble, logo y el producto */
 .frente {
-  position: absolute; inset: 0; z-index: 5;
+  --sobra: 25svh;
+  position: absolute; inset: 0 0 auto; height: calc(100svh + var(--sobra)); z-index: 5;
   background: var(--amarillo);
   display: grid; grid-template-rows: 1fr auto;
-  padding: calc(var(--cabecera) + 1.75rem) calc(var(--margen) + .75rem) 2.25rem;
+  padding: calc(var(--cabecera) + 1.75rem) calc(var(--margen) + .75rem) calc(2.25rem + var(--sobra));
   /* la bisagra de la tapa es la línea roja de arriba del marco */
   transform-origin: 50% calc(var(--cabecera) + .25rem);
   /* la tapa empieza en la bisagra: lo de arriba es el borde fijo de la caja y no gira */
@@ -133,10 +159,10 @@ ul, ol { padding: 0; list-style: none; }
 /* al levantarse, la tapa se oscurece como un cartón que gira contra la luz */
 .frente::after { content: ""; position: absolute; inset: 0; background: var(--choco); opacity: var(--sombra-tapa, 0); pointer-events: none; }
 /* el marco empieza debajo de la cabecera: el menú no se monta sobre el filete */
-.frente__marco { position: absolute; inset: calc(var(--cabecera) + .25rem) .75rem .75rem; border: 2px solid var(--rojo); pointer-events: none; }
+.frente__marco { position: absolute; inset: calc(var(--cabecera) + .25rem) .75rem calc(.75rem + var(--sobra)); border: 2px solid var(--rojo); pointer-events: none; }
 .frente__marco::before { content: ""; position: absolute; inset: 5px; border: 1px solid var(--rojo); }
 /* textos de canto, como los laterales impresos de la caja */
-.frente__esquina { position: absolute; top: 50%; font: 600 .66rem/1 var(--texto); letter-spacing: .2em; text-transform: uppercase; color: var(--rojo); white-space: nowrap; }
+.frente__esquina { position: absolute; top: 50svh; font: 600 .66rem/1 var(--texto); letter-spacing: .2em; text-transform: uppercase; color: var(--rojo); white-space: nowrap; }
 .frente__esquina--izq { left: 1.45rem; transform: translate(-50%, -50%) rotate(-90deg) translateY(50%); transform-origin: center; }
 .frente__esquina--der { right: 1.45rem; transform: translate(50%, -50%) rotate(90deg) translateY(50%); transform-origin: center; }
 .frente__centro { display: grid; justify-items: center; align-content: center; text-align: center; min-height: 0; }
@@ -159,7 +185,8 @@ ul, ol { padding: 0; list-style: none; }
   padding-right: .45rem; gap: .9rem;
   border: 0; box-shadow: 0 10px 24px -10px rgba(181, 30, 18, .7);
 }
-.boton__flecha { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--crema); color: var(--rojo); transition: transform .35s var(--curva); }
+.boton__flecha { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--crema); color: var(--rojo); transition: transform .35s var(--curva), background .35s .05s, color .35s .05s; }
+.lleno .boton__flecha { background: var(--amarillo); color: var(--choco); }
 /* "Buscar un café" es un link, no un botón: acompaña sin competir con "Comprar" */
 .frente__link {
   display: inline-flex; align-items: center; gap: .5rem; min-height: 3rem; padding: 0 .25rem;
@@ -183,20 +210,42 @@ ul, ol { padding: 0; list-style: none; }
 @media (min-width: 64rem) {
   /* sin fila de botones abajo: el centro tiene todo el alto y el logo no se sale hacia el marco */
   /* más aire arriba: el logo arranca bien por debajo del filete del marco y no lo toca */
-  .frente { grid-template-rows: 1fr; padding-top: calc(var(--cabecera) + 3.5rem); padding-bottom: 2.75rem; }
+  .frente { grid-template-rows: 1fr; padding-top: calc(var(--cabecera) + 3.5rem); padding-bottom: calc(2.75rem + var(--sobra)); }
   .frente__esquina { font-size: .72rem; }
   .frente__esquina--izq { left: 1.6rem; }
   .frente__esquina--der { right: 1.6rem; }
   .frente__alfajor { height: min(40svh, 26rem); }
   /* un botón en cada costado, abajo; el centro queda libre para el alfajor */
-  .frente__pie { position: absolute; left: 3rem; right: 3rem; bottom: 2.75rem; z-index: 1; justify-items: start; pointer-events: none; }
+  .frente__pie { position: absolute; left: 3rem; right: 3rem; bottom: calc(2.75rem + var(--sobra)); z-index: 1; justify-items: start; pointer-events: none; }
   .frente__acciones { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: nowrap; max-width: none; }
   .frente__acciones .boton { align-self: auto; }
   .frente__acciones .boton, .frente__link { flex: none; pointer-events: auto; }
 }
 
+/* celus chicos (poco alto): el alfajor se achica para que no lo tapen los botones */
+@media (max-width: 63.99rem) and (orientation: portrait) and (max-height: 44rem) {
+  .frente { padding-top: calc(var(--cabecera) + 1.25rem); padding-bottom: calc(1.5rem + var(--sobra)); }
+  .frente__alfajor { height: min(27svh, 64vw); margin-top: .75rem; }
+  .frente__pie { gap: .5rem; }
+  .frente__acciones .boton { min-height: 3.1rem; }
+  .frente__link { min-height: 2.6rem; }
+}
+
+/* celu acostado: poco alto; logo y alfajor más chicos y los botones en fila */
+@media (max-width: 63.99rem) and (orientation: landscape) and (max-height: 32rem) {
+  .frente { padding-top: calc(var(--cabecera) + 1rem); padding-bottom: calc(1.25rem + var(--sobra)); }
+  .frente__titulo { gap: .4rem; }
+  .frente__logo { width: min(62vw, 70svh); }
+  .frente__lema { font-size: 1rem; }
+  .frente__alfajor { height: 30svh; margin-top: .6rem; }
+  .frente__pie { gap: .4rem; }
+  .frente__acciones { flex-direction: row; justify-content: center; max-width: none; }
+  .frente__acciones .boton { align-self: auto; min-height: 2.9rem; }
+  .frente__link { min-height: 2.9rem; }
+}
+
 /* adentro de la caja: alfajores enteros apilados y uno partido apoyado */
-.adentro { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 1.5rem; padding-top: var(--cabecera); }
+.adentro { position: absolute; inset: 0 0 auto; height: 100svh; display: grid; place-items: center; align-content: center; gap: 1.5rem; padding-top: var(--cabecera); }
 .adentro__titulo { position: absolute; top: calc(var(--cabecera) + 1.25rem); left: var(--margen); z-index: 2; display: grid; font: 900 clamp(2.6rem, 10vw, 5.5rem)/.86 var(--display); text-transform: uppercase; }
 .adentro__titulo .hueco { -webkit-text-stroke-color: var(--choco); }
 
@@ -367,75 +416,100 @@ ul, ol { padding: 0; list-style: none; }
 
 /* ---------- 5 · havanna × leo ---------- */
 
-.leo { background: var(--choco); color: var(--crema); padding: 5rem var(--margen); display: grid; gap: 1rem; overflow: hidden; }
+.leo { position: relative; background: var(--choco); color: var(--crema); padding: 5rem var(--margen); display: grid; gap: 1rem; overflow: hidden; }
+/* la tapa solo existe si hay movimiento: sin JS o con movimiento reducido la sección se ve directo */
+.leo__tapa { display: none; }
+.leo.con-tapa { min-height: 100svh; }
+.leo.con-tapa .leo__tapa { display: block; position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
+.leo__tapa-texto { font: 800 180px/1 var(--display); text-transform: uppercase; fill: var(--rojo); }
 .leo__texto { display: grid; gap: 1.25rem; align-content: center; position: relative; z-index: 1; }
-.leo__titulo { font: 800 clamp(2.2rem, 8.5vw, 4.4rem)/.95 var(--display); text-transform: uppercase; text-wrap: balance; }
+/* el título en dos tamaños: la frase arranca chica y remata grande en "por la gloria" */
+.leo__titulo { display: grid; gap: .35rem; font: 800 1rem/.95 var(--display); text-transform: uppercase; }
+.leo__titulo-chico { font-size: clamp(1.35rem, 4vw, 2rem); line-height: 1.05; letter-spacing: .01em; color: rgba(255, 246, 222, .78); max-width: 22ch; text-wrap: balance; }
+.leo__titulo-grande { font-size: clamp(3.4rem, 12vw, 7.2rem); line-height: .85; color: var(--oro); }
 .leo__detalle { color: rgba(255, 246, 222, .7); }
 .leo__compra { display: flex; align-items: center; gap: 1.5rem; }
 .leo__compra .precio { color: var(--oro); font-size: 2rem; }
-.leo__vitrina { position: relative; display: grid; place-items: center; min-height: 22rem; }
-.leo__luz { position: absolute; width: 120%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(closest-side, rgba(210, 174, 92, .55), rgba(210, 174, 92, .12) 55%, transparent 72%); }
-.leo__vitrina img { position: relative; width: min(100%, 34rem); filter: drop-shadow(0 30px 34px rgba(0, 0, 0, .55)); will-change: transform; }
+/* en 3D la vitrina no recibe clics; el pouch sí (lo inclina el mouse) */
+.leo__vitrina { pointer-events: none; }
+.pouch__mouse { pointer-events: auto; }
+.flotan { position: absolute; inset: 0; pointer-events: none; transform-style: preserve-3d; }
+.flotan img { position: absolute; left: calc(50% + var(--x)); top: calc(50% + var(--y)); width: var(--w); margin: calc(var(--w) * -.35) 0 0 calc(var(--w) / -2); filter: drop-shadow(0 14px 16px rgba(0, 0, 0, .45)); will-change: transform; }
+.flotan [data-flota="atras"] { z-index: 0; }
+.flotan [data-flota="adelante"] { z-index: 2; filter: blur(3px) drop-shadow(0 20px 20px rgba(0, 0, 0, .4)); }
+/* sin movimiento, los de adelante no aportan: se ocultan */
+@media (prefers-reduced-motion: reduce) { .flotan [data-flota="adelante"] { display: none; } }
+.leo__vitrina { position: relative; display: grid; place-items: center; min-height: 22rem; perspective: 1200px; transform-style: preserve-3d; }
+.leo__luz { position: absolute; pointer-events: none; width: 120%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(closest-side, rgba(210, 174, 92, .55), rgba(210, 174, 92, .12) 55%, transparent 72%); }
+/* los pouches: dos capas de la foto oficial a distinta profundidad dentro de un espacio 3D.
+   Al inclinarse, el de adelante y el de atrás se desplazan distinto (paralaje) y se ve el volumen real.
+   La escala de cada capa compensa la perspectiva para que en reposo coincidan como en la foto. */
+.pouch__mouse { position: relative; z-index: 1; transform-style: preserve-3d; }
+.pouch { position: relative; width: min(80vw, 30rem, 58svh); aspect-ratio: 1000 / 965; transform-style: preserve-3d; will-change: transform; }
+.pouch__capa { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pouch__capa--dorso { transform: translateZ(-34px) scale(1.028); }
+.pouch__capa--frente { transform: translateZ(22px) scale(.982); }
+/* destellos del dorado: una franja de luz que corre según la inclinación, recortada con la silueta de cada pouch.
+   El dorso además tiene un destello blanco fijo, como el brillo que trae el frente en la foto */
+.pouch__luz {
+  position: absolute; inset: 0; pointer-events: none;
+  -webkit-mask: var(--silueta) center / 100% 100% no-repeat; mask: var(--silueta) center / 100% 100% no-repeat;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 246, 220, .22) 47%, rgba(255, 250, 235, .38) 50%, rgba(255, 246, 220, .22) 53%, transparent 62%) var(--brillo, 130%) 0 / 300% 100% no-repeat;
+}
+.pouch__luz--frente { --silueta: url(img/pack-leo-frente.webp); transform: translateZ(23px) scale(.982); }
+.pouch__luz--dorso {
+  --silueta: url(img/pack-leo-dorso.webp); transform: translateZ(-33px) scale(1.028);
+  background:
+    linear-gradient(105deg, transparent 38%, rgba(255, 246, 220, .22) 47%, rgba(255, 250, 235, .38) 50%, rgba(255, 246, 220, .22) 53%, transparent 62%) var(--brillo, 130%) 0 / 300% 100% no-repeat,
+    radial-gradient(ellipse 9% 30% at 84% 30%, rgba(255, 255, 255, .55), rgba(255, 255, 255, .12) 55%, transparent 75%),
+    linear-gradient(100deg, transparent 72%, rgba(255, 252, 240, .2) 80%, transparent 88%);
+}
 
 @media (min-width: 64rem) { .leo { grid-template-columns: 1.1fr .9fr; padding-block: 7rem; gap: 4rem; } }
-
-/* ---------- 6 · la receta original ---------- */
-
-.receta { background: var(--mar); padding: 6rem var(--margen); display: grid; justify-items: center; overflow: hidden; }
-/* ficha de cocina: papel crema con renglones, margen rojo y la esquina gastada */
-.receta__ficha {
-  --renglon: 2.6rem;
-  position: relative; width: min(100%, 48rem);
-  background:
-    linear-gradient(90deg, transparent 1.6rem, rgba(218, 42, 28, .55) 1.6rem, rgba(218, 42, 28, .55) calc(1.6rem + 1.5px), transparent calc(1.6rem + 1.5px)),
-    repeating-linear-gradient(180deg, transparent 0 calc(var(--renglon) - 1px), rgba(15, 53, 80, .16) calc(var(--renglon) - 1px) var(--renglon)),
-    var(--crema);
-  color: var(--choco);
-  padding: 1.75rem 1.1rem 2.25rem 2.2rem;
-  transform: rotate(-1.2deg);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, .35), 0 2px 0 rgba(0, 0, 0, .08);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2.2rem), calc(100% - 2.2rem) 100%, 0 100%);
+/* con la tapa la sección queda anclada: tiene que entrar justo en la pantalla, debajo del nav, sin cortarse */
+@media (min-width: 64rem) { .leo.con-tapa { height: 100lvh; min-height: 0; padding-block: calc(var(--cabecera) + 1.5rem) calc(1.5rem + 100lvh - 100svh); align-items: center; } .leo.con-tapa .leo__vitrina { min-height: 0; height: 100%; } }
+/* celu y tablet: la sección también queda anclada y el pouch hace la misma coreografía.
+   Todo entra en una pantalla: el texto arriba, compacto, y el pouch ocupa lo que sobra */
+@media (max-width: 63.99rem) {
+  .leo.con-tapa { height: 100lvh; min-height: 0; padding-block: calc(var(--cabecera) + 1rem) calc(1rem + 100lvh - 100svh); grid-template-rows: auto minmax(0, 1fr); gap: .25rem; }
+  .leo.con-tapa .leo__texto { gap: .65rem; align-content: start; }
+  .leo.con-tapa .leo__titulo-chico { font-size: clamp(1.05rem, 4.6vw, 1.6rem); max-width: 26ch; }
+  .leo.con-tapa .leo__titulo-grande { font-size: clamp(2.7rem, 13.5vw, 5rem); }
+  .leo.con-tapa .leo__detalle { font-size: .92rem; }
+  .leo.con-tapa .leo__compra { gap: 1rem; }
+  .leo.con-tapa .leo__compra .precio { font-size: 1.55rem; }
+  .leo.con-tapa .leo__vitrina { min-height: 0; height: 100%; }
+  .leo.con-tapa .pouch { width: min(80vw, 40svh, 28rem); }
+  .leo.con-tapa .leo__luz { width: min(110vw, 60svh); }
+  .flotan img { left: calc(50% + var(--x) * .78); width: calc(var(--w) * .72); margin: calc(var(--w) * -.25) 0 0 calc(var(--w) * -.36); }
 }
-.receta__ficha::after { content: ""; position: absolute; right: 0; bottom: 0; width: 2.2rem; height: 2.2rem; background: linear-gradient(135deg, #E9DDBE 50%, transparent 50%); }
-.receta__cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .5rem 1rem; }
-.receta__sello { font: 800 .8rem/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--rojo); border: 2px solid var(--rojo); padding: .45rem .7rem .4rem; transform: rotate(-3deg); }
-.receta__lugar { font: 600 .7rem/1 var(--texto); letter-spacing: .18em; text-transform: uppercase; color: var(--choco-medio); }
-.receta__titulo { font: italic 400 clamp(1.9rem, 6vw, 2.9rem)/1.05 var(--nota); margin: 1.5rem 0 1rem; }
-.receta__pasos { display: grid; }
-.receta__paso { display: grid; grid-template-columns: 2.6rem 1fr 1.7rem; align-items: center; gap: .7rem; padding: .75rem 0; border-bottom: 1px dashed rgba(42, 23, 16, .22); }
-.receta__cant { font: 900 clamp(2.2rem, 7vw, 3rem)/.9 var(--display); color: var(--rojo); text-align: right; font-variant-numeric: tabular-nums; }
-.receta__txt { font-size: .98rem; line-height: 1.35; }
-.receta__txt b { font: 800 1.05rem/1 var(--display); letter-spacing: .04em; text-transform: uppercase; margin-right: .25rem; }
-/* el tilde se dibuja a mano cuando el renglón aparece */
-.receta__tilde { width: 1.7rem; height: 1.4rem; stroke: var(--rojo); stroke-width: 3.2; stroke-dasharray: 60; stroke-dashoffset: var(--trazo, 0); }
-.receta__firma { margin-top: 1.5rem; font: italic 400 1.15rem/1.3 var(--nota); color: var(--choco-medio); text-align: right; }
-
-@media (min-width: 64rem) {
-  .receta { padding-block: 8rem; }
-  .receta__ficha { padding: 2.75rem 3rem 3rem 5rem; }
-  .receta__ficha { background:
-    linear-gradient(90deg, transparent 3.9rem, rgba(218, 42, 28, .55) 3.9rem, rgba(218, 42, 28, .55) calc(3.9rem + 1.5px), transparent calc(3.9rem + 1.5px)),
-    repeating-linear-gradient(180deg, transparent 0 calc(var(--renglon) - 1px), rgba(15, 53, 80, .16) calc(var(--renglon) - 1px) var(--renglon)),
-    var(--crema); }
-  .receta__paso { grid-template-columns: 4.5rem 1fr 2.6rem; gap: 1.25rem; }
-  .receta__tilde { width: 2.2rem; height: 1.8rem; }
-  .receta__txt { font-size: 1.05rem; }
+/* celu acostado: no hay alto para apilar, van lado a lado como en la compu */
+@media (max-width: 63.99rem) and (orientation: landscape) and (max-height: 32rem) {
+  .leo.con-tapa { grid-template-columns: 1.1fr .9fr; grid-template-rows: none; align-items: center; gap: 1.5rem; }
+  .leo.con-tapa .leo__texto { align-content: center; }
+  .leo.con-tapa .leo__titulo-grande { font-size: clamp(2.2rem, 13svh, 3.6rem); }
+  .leo.con-tapa .leo__titulo-chico { font-size: clamp(.95rem, 5svh, 1.25rem); }
+  .leo.con-tapa .pouch { width: min(38vw, 62svh); }
 }
 
 /* ---------- 7 · el mundo ---------- */
 
-.mundo { background: var(--crema); padding: 5rem var(--margen); display: grid; gap: 3rem; overflow: hidden; }
-.orbita { --radio-orbita: min(34vw, 13rem); position: relative; width: calc(var(--radio-orbita) * 2); aspect-ratio: 1; justify-self: center; display: grid; place-items: center; margin: 2.5rem 0; }
+.mundo { background: var(--crema); padding: 4rem var(--margen); display: grid; gap: 2rem; overflow: hidden; }
+/* el título de esta sección va más contenido que el resto */
+.mundo .titulo { font-size: clamp(2.2rem, 7vw, 3.6rem); line-height: .9; }
+.orbita { --radio-orbita: min(32vw, 11rem); position: relative; width: calc(var(--radio-orbita) * 2); aspect-ratio: 1; justify-self: center; display: grid; place-items: center; margin: 1.75rem 0; }
 .orbita__anillo { position: absolute; inset: 0; border: 1.5px dashed rgba(42, 23, 16, .25); border-radius: 50%; }
-.orbita__anillo span { position: absolute; left: 50%; top: 50%; font: 800 clamp(.85rem, 3.2vw, 1.25rem)/1 var(--display); text-transform: uppercase; letter-spacing: .02em; white-space: nowrap; padding: .45rem .8rem; border-radius: 999px; background: var(--amarillo); color: var(--rojo); }
+.orbita__anillo span { position: absolute; left: 50%; top: 50%; font: 800 clamp(.75rem, 2.6vw, 1rem)/1 var(--display); text-transform: uppercase; letter-spacing: .02em; white-space: nowrap; padding: .4rem .7rem; border-radius: 999px; background: var(--amarillo); color: var(--rojo); cursor: pointer; transition: background .35s, color .35s, box-shadow .35s; }
+.orbita__anillo span:hover { box-shadow: 0 0 0 2px var(--rojo); }
+/* el país elegido: rojo, como Argentina al principio */
 .orbita__anillo span.es-origen { background: var(--rojo); color: var(--crema); }
-.orbita__centro { width: 46%; filter: var(--sombra-producto); }
+.orbita__centro { width: 48%; filter: var(--sombra-producto); }
 
-.mundo__buscador { display: grid; gap: .9rem; }
-.mundo__bajada { font: italic 400 1.2rem/1.35 var(--nota); color: var(--choco-medio); margin-bottom: .5rem; }
+.mundo__buscador { display: grid; gap: .7rem; }
+.mundo__bajada { font: italic 400 1.05rem/1.35 var(--nota); color: var(--choco-medio); margin-bottom: .25rem; }
 .paso { font: 600 .75rem/1 var(--texto); letter-spacing: .14em; text-transform: uppercase; color: var(--choco-medio); margin-top: .5rem; }
 .chips { display: flex; flex-wrap: wrap; gap: .45rem; }
-.chips button, .chips a { min-height: 2.5rem; padding: 0 1rem; display: inline-flex; align-items: center; gap: .4rem; border: 1.5px solid var(--choco); border-radius: 999px; background: transparent; text-decoration: none; font-weight: 500; cursor: pointer; transition: background .25s, color .25s, border-color .25s; }
+.chips button, .chips a { min-height: 2.25rem; padding: 0 .85rem; font-size: .9rem; display: inline-flex; align-items: center; gap: .4rem; border: 1.5px solid var(--choco); border-radius: 999px; background: transparent; text-decoration: none; font-weight: 500; cursor: pointer; transition: background .25s, color .25s, border-color .25s; }
 .chips button:hover { background: rgba(42, 23, 16, .07); }
 .chips button[aria-pressed="true"] { background: var(--choco); color: var(--amarillo); }
 .chips--zonas a { border-color: rgba(42, 23, 16, .25); }
@@ -448,7 +522,7 @@ ul, ol { padding: 0; list-style: none; }
 .mundo__cerca { justify-self: start; }
 .mundo__enlaces { display: flex; flex-wrap: wrap; gap: 1rem 2rem; margin-top: 1rem; }
 
-@media (min-width: 64rem) { .mundo { grid-template-columns: 1fr 1fr; align-items: center; padding-block: 7rem; gap: 4rem; } }
+@media (min-width: 64rem) { .mundo { grid-template-columns: 1fr 1fr; align-items: center; padding-block: 5rem; gap: 3rem; max-width: 72rem; margin-inline: auto; } }
 
 /* ---------- 8 · regalos: etiquetas de regalo ---------- */
 
@@ -528,8 +602,8 @@ ul, ol { padding: 0; list-style: none; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .caja, .caja__escena { height: auto; }
   .caja__escena { display: flex; flex-direction: column; }
-  .frente { position: relative; min-height: 100svh; order: 1; }
-  .adentro { position: relative; min-height: 100svh; order: 2; }
+  .frente { --sobra: 0px; position: relative; height: auto; min-height: 100svh; order: 1; }
+  .adentro { position: relative; height: auto; min-height: 100svh; order: 2; }
   .volador { display: none; }
   .lineas__escena { height: auto; display: grid; gap: 1rem; padding: 6rem var(--margen) 2rem; }
   .lineas__titulo { position: static; }

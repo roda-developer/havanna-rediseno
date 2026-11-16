@@ -16,6 +16,15 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<!-- filtro de los botones: ruido que ondula el borde de la tinta, como líquido que se mueve -->
+<svg class="filtros" width="0" height="0" aria-hidden="true" focusable="false">
+  <filter id="tinta-liquida" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.012 0.022" numOctaves="1" seed="4" result="ruido">
+      <animate attributeName="baseFrequency" dur="7s" values="0.012 0.022;0.017 0.014;0.012 0.022" repeatCount="indefinite"/>
+    </feTurbulence>
+    <feDisplacementMap in="SourceGraphic" in2="ruido" scale="80" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 
 <a class="saltar" href="#contenido">Ir al contenido</a>
 
@@ -44,7 +53,6 @@
     <a href="#mundo" data-cerrar-menu>Cafés</a>
     <a href="https://tienda.havanna.com.ar/promociones/">Promos</a>
     <a href="#regalos" data-cerrar-menu>Regalos</a>
-    <a href="#anio" data-cerrar-menu>Historia</a>
   </nav>
   <a class="boton boton--rojo" href="https://tienda.havanna.com.ar/">Comprar online</a>
 </div>
@@ -222,9 +230,27 @@
 
   <!-- 5 · HAVANNA × LEO -->
   <section class="leo" aria-labelledby="leo-titulo" data-leo>
+    <!-- tapa amarilla: un garabato grueso la va borrando con el scroll y deja ver la sección -->
+    <svg class="leo__tapa" aria-hidden="true" data-leo-tapa>
+      <defs>
+        <mask id="leo-garabato" maskUnits="userSpaceOnUse" x="-50%" y="-50%" width="200%" height="200%">
+          <path data-garabato pathLength="1" fill="none" stroke="#fff" stroke-width="350" stroke-linecap="round" stroke-linejoin="round"
+            d="M-74 -74 Q-500 428 -726 1046 Q-292 433 272 -62 Q-163 416 -388 1022 Q44 418 578 -98 Q159 429 -82 1058 Q360 433 924 -86 Q496 418 256 1034 Q693 424 1270 -56 Q831 410 606 1010 Q1036 413 1572 -92 Q1151 427 912 1052 Q1352 436 1918 -68 Q1486 418 1258 1028 Q1691 423 2240 -80 Q1813 423 1580 1040 Q2014 408 2586 -104 Q2156 404 1894 1016"/>
+        </mask>
+      </defs>
+      <g mask="url(#leo-garabato)">
+        <rect width="100%" height="100%" fill="#FFCC00"/>
+        <svg x="22%" y="14%" width="56%" height="78%" viewBox="0 0 1100 430" preserveAspectRatio="xMidYMid meet" overflow="visible">
+          <g data-tapa-marca>
+            <image href="img/logo.png" x="8" y="20" width="1084" height="191"/>
+            <text class="leo__tapa-texto" x="550" y="400" text-anchor="middle">× Leo</text>
+          </g>
+        </svg>
+      </g>
+    </svg>
     <div class="leo__texto">
       <p class="volanta volanta--oro">Havanna × Leo</p>
-      <h2 id="leo-titulo" class="leo__titulo">Para el que jugaba por alfajores mucho antes de hacerlo por la gloria</h2>
+      <h2 id="leo-titulo" class="leo__titulo"><span class="leo__titulo-chico">Para el que jugaba por alfajores mucho antes de hacerlo</span> <span class="leo__titulo-grande">por la gloria</span></h2>
       <p class="leo__detalle">Mini alfajores en pouch dorado. Diez unidades.</p>
       <div class="leo__compra">
         <p class="precio">$24.000</p>
@@ -233,46 +259,25 @@
     </div>
     <div class="leo__vitrina" data-vitrina>
       <div class="leo__luz" aria-hidden="true"></div>
-      <img data-pouch src="img/pouch-leo.webp" alt="Pouch dorado de mini alfajores Havanna × Leo, de frente y de dorso" width="893" height="599" loading="lazy">
-    </div>
-  </section>
-
-  <!-- 6 · LA RECETA ORIGINAL: la historia contada como una ficha de receta -->
-  <section class="receta" id="anio" aria-labelledby="receta-titulo" data-receta>
-    <div class="receta__ficha" data-ficha>
-      <div class="receta__cabeza">
-        <p class="receta__sello">Receta original</p>
-        <p class="receta__lugar">Mar del Plata · 1947</p>
+      <!-- paquetitos y alfajores que flotan alrededor del pouch; los grandes y borrosos pasan "por delante de la cámara" -->
+      <div class="flotan" aria-hidden="true" data-flotan>
+        <img src="img/mini-leo-1.webp" alt="" style="--x:-58%;--y:-28%;--w:5.2rem" data-flota="atras" loading="lazy">
+        <img src="img/alfajor-leo.webp" alt="" style="--x:46%;--y:-34%;--w:5.4rem" data-flota="atras" loading="lazy">
+        <img src="img/mini-leo-9.webp" alt="" style="--x:-60%;--y:26%;--w:4.6rem" data-flota="atras" loading="lazy">
+        <img src="img/mini-leo-15.webp" alt="" style="--x:47%;--y:30%;--w:4.2rem" data-flota="atras" loading="lazy">
+        <img src="img/mini-leo-6.webp" alt="" style="--x:36%;--y:20%;--w:10rem" data-flota="adelante" loading="lazy">
+        <img src="img/alfajor-leo.webp" alt="" style="--x:-44%;--y:4%;--w:12rem" data-flota="adelante" loading="lazy">
       </div>
-      <h2 id="receta-titulo" class="receta__titulo">Cómo se hace un Havanna</h2>
-      <ol class="receta__pasos">
-        <li class="receta__paso" data-paso>
-          <span class="receta__cant">3</span>
-          <span class="receta__txt"><b>socios</b> Demetrio Elíades, Luis Sbaraglini y Benjamín Sisterna arman la receta en Mar del Plata.</span>
-          <svg class="receta__tilde" aria-hidden="true" viewBox="0 0 40 32"><path d="M4 18c4 2 7 6 9 10C18 18 26 9 36 4"/></svg>
-        </li>
-        <li class="receta__paso" data-paso>
-          <span class="receta__cant">1</span>
-          <span class="receta__txt"><b>fábrica</b> Con la elaboración a la vista. Abre el 6 de enero de 1948.</span>
-          <svg class="receta__tilde" aria-hidden="true" viewBox="0 0 40 32"><path d="M4 18c4 2 7 6 9 10C18 18 26 9 36 4"/></svg>
-        </li>
-        <li class="receta__paso" data-paso>
-          <span class="receta__cant">4</span>
-          <span class="receta__txt"><b>personas</b> El primer día: dos obreros, un maestro y un ayudante.</span>
-          <svg class="receta__tilde" aria-hidden="true" viewBox="0 0 40 32"><path d="M4 18c4 2 7 6 9 10C18 18 26 9 36 4"/></svg>
-        </li>
-        <li class="receta__paso" data-paso>
-          <span class="receta__cant">50</span>
-          <span class="receta__txt"><b>sucursales</b> Sobre la Costa Atlántica. El regalo de vuelta del verano.</span>
-          <svg class="receta__tilde" aria-hidden="true" viewBox="0 0 40 32"><path d="M4 18c4 2 7 6 9 10C18 18 26 9 36 4"/></svg>
-        </li>
-        <li class="receta__paso" data-paso>
-          <span class="receta__cant">8</span>
-          <span class="receta__txt"><b>países</b> Con un Havanna hoy.</span>
-          <svg class="receta__tilde" aria-hidden="true" viewBox="0 0 40 32"><path d="M4 18c4 2 7 6 9 10C18 18 26 9 36 4"/></svg>
-        </li>
-      </ol>
-      <p class="receta__firma">Dulce como la vida. Salado como el mar.</p>
+      <div class="pouch__mouse" data-pouch-mouse>
+        <!-- los dos pouches de la foto oficial, separados en capas a distinta profundidad:
+             al inclinarse se mueven entre sí como objetos de verdad (paralaje), como si estuvieran en la mano -->
+        <div class="pouch" data-pouch>
+          <img class="pouch__capa pouch__capa--dorso" src="img/pack-leo-dorso.webp" alt="" width="1000" height="965" loading="lazy">
+          <img class="pouch__capa pouch__capa--frente" src="img/pack-leo-frente.webp" alt="Pouches dorados de mini alfajores Havanna × Leo: el frente y el dorso con la foto de Leo" width="1000" height="965" loading="lazy">
+          <i class="pouch__luz pouch__luz--dorso" aria-hidden="true"></i>
+          <i class="pouch__luz pouch__luz--frente" aria-hidden="true"></i>
+        </div>
+      </div>
     </div>
   </section>
 

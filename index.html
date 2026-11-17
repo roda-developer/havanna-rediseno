@@ -291,8 +291,8 @@
     </div>
   </section>
 
-  <!-- 8 · REGALOS: etiquetas de regalo colgadas, como las que se atan a una caja -->
-  <!-- al llegar, un muro de palabras gigantes gira y se va (queda tenue de fondo); después entran el título y las etiquetas -->
+  <!-- 8 · REGALOS: regalar, empresas y franquicias, una por pantalla -->
+  <!-- al llegar, un muro de palabras gigantes gira y se va (queda tenue de fondo); después pasan las tres piezas -->
   <section class="regalos" id="regalos" aria-labelledby="regalos-titulo" data-regalos>
     <div class="paso__muro" aria-hidden="true" data-paso-muro>
       <p>Havanna · Mar del Plata · Havanna</p>
@@ -304,37 +304,37 @@
       <p>Havanna · Mar del Plata · Havanna</p>
     </div>
     <div class="regalos__contenido" data-regalos-contenido>
-    <div class="regalos__cabeza">
-      <h2 id="regalos-titulo" class="titulo">Para regalar</h2>
-      <p class="regalos__bajada">Y para los que regalan mucho.</p>
-    </div>
-    <ul class="etiquetas">
-      <li class="etiqueta" style="--g:-4deg" data-etiqueta>
-        <a href="https://havanna.com.ar/ventas-corporativas/vouchers">
-          <span class="etiqueta__ojal" aria-hidden="true"></span>
-          <img src="img/gift-card.webp" alt="" width="1111" height="741" loading="lazy">
-          <span class="etiqueta__nombre">Gift cards</span>
-          <span class="etiqueta__texto">Para regalar sin adivinar el gusto.</span>
-          <span class="etiqueta__ir">Ver gift cards <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-        </a>
+    <h2 id="regalos-titulo" class="sr">Regalos, empresas y franquicias</h2>
+    <!-- una pieza por pantalla: el título grande cambia con cada una (regalar, empresas, franquicias) -->
+    <nav class="regalos__indice" aria-label="Regalos, empresas y franquicias" data-regalos-indice>
+      <button type="button" data-ir-regalo="0">Gift cards</button>
+      <button type="button" data-ir-regalo="1">Empresas</button>
+      <button type="button" data-ir-regalo="2">Franquicias</button>
+    </nav>
+    <ul class="regalos__piezas">
+      <li class="regalo" data-regalo>
+        <img class="regalo__foto" src="img/gift-card.webp" alt="" width="1111" height="741" loading="lazy">
+        <div class="regalo__texto">
+          <h3 class="regalo__titulo">Para<br>regalar</h3>
+          <p class="regalo__bajada">Gift cards para regalar sin adivinar el gusto.</p>
+          <a class="regalo__ir" href="https://havanna.com.ar/ventas-corporativas/vouchers">Ver gift cards <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
       </li>
-      <li class="etiqueta" style="--g:2deg" data-etiqueta>
-        <a href="https://havanna.com.ar/ventas-corporativas/regalos-especiales">
-          <span class="etiqueta__ojal" aria-hidden="true"></span>
-          <img src="img/caja-coronitas-surtidas.webp" alt="" loading="lazy">
-          <span class="etiqueta__nombre">Empresas</span>
-          <span class="etiqueta__texto">Cajas con tu marca para clientes y equipos.</span>
-          <span class="etiqueta__ir">Pedir presupuesto <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-        </a>
+      <li class="regalo" data-regalo>
+        <img class="regalo__foto" src="img/caja-mixtos.webp" alt="" width="789" height="514" loading="lazy">
+        <div class="regalo__texto">
+          <h3 class="regalo__titulo">Para<br>empresas</h3>
+          <p class="regalo__bajada">Cajas con tu marca para clientes y equipos.</p>
+          <a class="regalo__ir" href="https://havanna.com.ar/ventas-corporativas/regalos-especiales">Pedir presupuesto <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
       </li>
-      <li class="etiqueta" style="--g:-2deg" data-etiqueta>
-        <a href="https://havanna.com.ar/atencion-al-cliente/franquicias">
-          <span class="etiqueta__ojal" aria-hidden="true"></span>
-          <img src="img/caja-mdp.webp" alt="" loading="lazy">
-          <span class="etiqueta__nombre">Franquicias</span>
-          <span class="etiqueta__texto">Abrí un Havanna en tu ciudad.</span>
-          <span class="etiqueta__ir">Conocer más <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-        </a>
+      <li class="regalo" data-regalo>
+        <img class="regalo__foto" src="img/caja-mdp.webp" alt="" width="935" height="504" loading="lazy">
+        <div class="regalo__texto">
+          <h3 class="regalo__titulo">Para<br>tu ciudad</h3>
+          <p class="regalo__bajada">Abrí un Havanna con nuestras franquicias.</p>
+          <a class="regalo__ir" href="https://havanna.com.ar/atencion-al-cliente/franquicias">Conocer franquicias <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
       </li>
     </ul>
     </div>

@@ -382,13 +382,12 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
 
   /* 8 · regalos: la sección queda anclada. Sobre el crema del mundo aparece un muro de palabras tenue y en
      diagonal; gira hasta quedar vertical mientras el fondo se vuelve rojo y las filas corren en sentidos opuestos.
-     Se acerca a la cámara y se va, vuelve muy tenue de fondo, y recién ahí entran el título y las etiquetas,
+     Se acerca a la cámara y se va, vuelve muy tenue de fondo, y recién ahí pasan las tres piezas (regalar, empresas, franquicias),
      una por una, a medida que se baja -------------------------------------------------------------- */
   const regalos = $('[data-regalos]');
   const contenidoRegalos = $('[data-regalos-contenido]');
   const muro = $('[data-paso-muro]');
   const filasMuro = $$('p', muro);
-  const etiquetas = $$('[data-etiqueta]');
   regalos.classList.add('con-escena');
   // si el contenido no entra en la pantalla (celus bajos), se achica lo justo para que entre
   const encajarRegalos = () => {
@@ -402,11 +401,10 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
 
   // mientras la sección sube, el muro ya se asoma tenue: así no hay una pantalla crema vacía entre el mundo y los regalos
   gsap.fromTo(muro, { opacity: 0 }, { opacity: .3, ease: 'none', immediateRender: false, scrollTrigger: { trigger: regalos, start: 'top 85%', end: 'top top', scrub: true } });
-  const regalosCelu = matchMedia('(max-width: 55.99rem)').matches;
 
   const escenaRegalos = gsap.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: regalos, start: 'top top', end: regalosCelu ? '+=300%' : '+=260%', pin: true, scrub: 1, invalidateOnRefresh: true },
+    scrollTrigger: { trigger: regalos, start: 'top top', end: '+=300%', pin: true, scrub: 1, invalidateOnRefresh: true },
   })
     // 1 · las letras
     // el muro no existe hasta que la sección queda anclada: así no se ve el borde cortado al entrar
@@ -418,27 +416,45 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
     // 2 · el muro vuelve, chico y muy tenue, como fondo de los regalos
     .set(muro, { scale: .9, rotation: -90 }, 1.6)
     .to(muro, { opacity: .1, duration: .4 }, 1.6)
-    // 3 · el título y la bajada suben
-    .fromTo('.regalos__cabeza > *', { yPercent: 80, opacity: 0 }, { yPercent: 0, opacity: 1, stagger: .12, duration: .45, ease: 'power3.out' }, 1.55);
-  // 4 · la fila entra desde la derecha y termina con la última pieza a la vista; cada pieza se revela
-  //     de abajo hacia arriba (la foto) y después aparecen su número, el texto y el link
-  const pista = $('.etiquetas');
-  const finPista = () => Math.min(0, contenidoRegalos.clientWidth - pista.scrollWidth);
-  // en el celu entra una pieza por pantalla: llega, se queda quieta para leerla y le deja el lugar a la siguiente
-  const paso = () => etiquetas[1].offsetLeft - etiquetas[0].offsetLeft;
-  const llegada = (i) => (regalosCelu ? 1.75 + i * 1 : 1.9 + i * .5);
-  if (regalosCelu) {
-    escenaRegalos.fromTo(pista, { x: () => innerWidth }, { x: 0, duration: .5, ease: 'power3.out' }, 1.75);
-    etiquetas.slice(1).forEach((_, k) => escenaRegalos.to(pista, { x: () => -paso() * (k + 1), duration: .5, ease: 'power3.inOut' }, llegada(k + 1)));
-  } else {
-    escenaRegalos.fromTo(pista, { x: () => innerWidth * .55 }, { x: finPista, duration: 2.4, ease: 'power2.out' }, 1.75);
-  }
-  etiquetas.forEach((et, i) => {
+    // 3 · el índice aparece
+    .fromTo('[data-regalos-indice]', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: .35, ease: 'power2.out' }, 1.55);
+  // 4 · las piezas pasan de a una: el producto entra girando desde la derecha y el título sube desde abajo;
+  //     al llegar la siguiente, la anterior se va hacia la izquierda y hacia arriba
+  const piezas = $$('[data-regalo]');
+  const llegadas = piezas.map((_, i) => 1.7 + i * 1.15);
+  piezas.forEach((pieza, i) => {
+    const t = llegadas[i];
+    const foto = $('.regalo__foto', pieza);
+    const titulo = $('.regalo__titulo', pieza);
+    const resto = $$('.regalo__bajada, .regalo__ir', pieza);
     escenaRegalos
-      .fromTo($('img', et), { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: .55, ease: 'power3.out' }, llegada(i) + .15)
-      .fromTo($$('.etiqueta__nombre, .etiqueta__texto, .etiqueta__ir', et), { y: 18, opacity: 0 }, { y: 0, opacity: 1, stagger: .07, duration: .35, ease: 'power2.out' }, llegada(i) + .35);
+      .fromTo(pieza, { autoAlpha: 0 }, { autoAlpha: 1, duration: .01 }, t)
+      .fromTo(foto, { xPercent: 45, rotation: 10, opacity: 0 }, { xPercent: 0, rotation: 0, opacity: 1, duration: .55, ease: 'power3.out' }, t)
+      .fromTo(titulo, { yPercent: 35, clipPath: 'inset(0% 0% 100% 0%)' }, { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: .5, ease: 'power3.out' }, t + .05)
+      .fromTo(resto, { y: 16, opacity: 0 }, { y: 0, opacity: 1, stagger: .06, duration: .35, ease: 'power2.out' }, t + .25);
+    if (i === piezas.length - 1) return;
+    const sale = llegadas[i + 1] - .3;
+    escenaRegalos
+      .to(foto, { xPercent: -40, rotation: -8, opacity: 0, duration: .3, ease: 'power2.in' }, sale)
+      .to(titulo, { yPercent: -25, clipPath: 'inset(0% 0% 0% 0%)', opacity: 0, duration: .3, ease: 'power2.in' }, sale)
+      .to(resto, { opacity: 0, duration: .2 }, sale)
+      .to(pieza, { autoAlpha: 0, duration: .01 }, sale + .3);
   });
-  escenaRegalos.to({}, { duration: .6 });
+  escenaRegalos.to({}, { duration: .5 });
+
+  // el índice marca la pieza a la vista y lleva directo a cada una
+  const botonesRegalos = $$('[data-ir-regalo]');
+  const marcarRegalo = () => {
+    const ahora = escenaRegalos.time();
+    const activa = llegadas.reduce((a, t, i) => (ahora >= t - .1 ? i : a), 0);
+    botonesRegalos.forEach((b, i) => b.setAttribute('aria-current', String(i === activa)));
+  };
+  escenaRegalos.eventCallback('onUpdate', marcarRegalo);
+  marcarRegalo();
+  botonesRegalos.forEach((b, i) => b.addEventListener('click', () => {
+    const st = escenaRegalos.scrollTrigger;
+    irA(st.start + (st.end - st.start) * ((llegadas[i] + .6) / escenaRegalos.duration()));
+  }));
 
   /* pie: la marca sube desde abajo, como al sacarla de la caja */
   gsap.fromTo('[data-pie-marca] img', { yPercent: 100 }, { yPercent: 0, ease: 'power3.out', duration: 1.2, scrollTrigger: { trigger: '[data-pie-marca]', start: 'top 95%' } });

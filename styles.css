@@ -361,7 +361,15 @@ ul, ol { padding: 0; list-style: none; }
 .indice button:hover, .indice a:hover { background: rgba(255, 246, 222, .12); }
 .indice button[aria-current="true"] { background: var(--amarillo); color: var(--choco); }
 .indice a { color: var(--amarillo); }
-@media (max-width: 30rem) { .indice button, .indice a { padding: 0 .7rem; font-size: .8rem; } }
+/* celu: el índice ocupa todo el ancho y entran las cuatro líneas sin cortarse; "Sin TACC" sigue en el pie */
+@media (max-width: 30rem) {
+  .indice { left: var(--margen); right: var(--margen); transform: none; max-width: none; gap: 0; }
+  .indice button { flex: 1 1 auto; justify-content: center; padding: 0 .4rem; font-size: .76rem; }
+  .indice a { display: none; }
+}
+@media (max-width: 22rem) {
+  .indice button { padding: 0 .28rem; font-size: .7rem; }
+}
 .panel__fotos img + img { margin-left: -12%; }
 
 @media (max-width: 63.99rem) {
@@ -370,13 +378,17 @@ ul, ol { padding: 0; list-style: none; }
   .panel__dato { font-size: 1.05rem; }
   /* las fotos se miden por alto: así las cajas apaisadas y las verticales ocupan lo mismo */
   .panel__fotos { margin: .15rem 0 .35rem; }
-  .panel__fotos img { width: auto; height: min(14svh, 7.5rem); }
+  /* las fotos se miden por alto, pero nunca más anchas que la pantalla: con tres cajas apaisadas la tercera se salía por la derecha */
+  .panel__fotos { width: 100%; }
+  .panel__fotos img { width: auto; height: auto; max-height: min(14svh, 7.5rem); max-width: 36%; min-width: 0; }
+  /* superposición fija: en % se comía las piezas angostas (la tableta quedaba escondida atrás de la lata) */
+  .panel__fotos img + img { margin-left: -1.5rem; }
   .panel__lista a { padding: .5rem 0; }
   .panel__pie { margin-top: .4rem; }
 }
 @media (max-width: 63.99rem) and (max-height: 700px) {
   .panel__envio { display: none; }
-  .panel__fotos img { height: 11svh; }
+  .panel__fotos img { max-height: 11svh; }
 }
 .panel__fotos img:nth-child(1) { transform: rotate(-6deg); }
 .panel__fotos img:nth-child(2) { transform: rotate(4deg) translateY(-6%); position: relative; z-index: 1; }

@@ -264,6 +264,9 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
     },
     scrollTrigger: {
       trigger: '[data-lineas]', start: 'top top', end: () => `+=${paneles.length * 115}%`, pin: true, scrub: 1.4, anticipatePin: 1, invalidateOnRefresh: true,
+      // al soltarse la sección el índice se va: si no, sube flotando sobre la tapa de Leo
+      onLeave: () => gsap.to('[data-indice]', { autoAlpha: 0, duration: .2, ease: 'power2.out' }),
+      onEnterBack: () => gsap.to('[data-indice]', { autoAlpha: 1, duration: .25, ease: 'power2.out' }),
     },
   });
   paneles.forEach((panel, i) => {

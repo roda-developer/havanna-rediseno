@@ -50,40 +50,10 @@
 <main id="contenido">
 
   <!-- 1 · LA CAJA: la portada es el frente de la caja amarilla; al bajar, la tapa se levanta
-       y adentro el alfajor se desarma en sus piezas -->
-  <section class="caja" id="inicio" data-caja>
-    <div class="caja__escena">
-
-      <div class="adentro" data-adentro>
-        <h2 class="adentro__titulo" data-adentro-titulo><span>Lo que hay</span><span class="hueco">adentro</span></h2>
-
-        <div class="volador" aria-hidden="true" data-voladores>
-          <img src="img/coronitas-sueltas.webp" alt="" style="--x:35;--y:-14;--xm:26;--ym:-31;--g:-10;--w:13" loading="lazy">
-          <img src="img/galletitas-sueltas.webp" alt="" style="--x:-34;--y:31;--xm:-24;--ym:36;--g:6;--w:14" loading="lazy">
-          <img src="img/trufas-sueltas.webp" alt="" style="--x:35;--y:35;--g:8;--w:13" data-solo-compu loading="lazy">
-        </div>
-
-        <div class="mesa" data-mesa>
-          <div class="apilado" data-apilado>
-            <img class="apilado__alfajor" data-alfajor style="--i:0" src="img/entero-arriba.webp" alt="" width="379" height="264">
-            <img class="apilado__alfajor apilado__alfajor--espejo" data-alfajor style="--i:1" src="img/entero-arriba.webp" alt="" width="379" height="264">
-            <img class="apilado__alfajor" data-alfajor style="--i:2" src="img/entero-arriba.webp" alt="Tres alfajores Havanna enteros, apilados" width="379" height="264">
-          </div>
-          <figure class="partido" data-partido>
-            <img src="img/partido-apoyado.webp" alt="Alfajor Havanna partido, apoyado contra la pila, con el dulce de leche a la vista" width="399" height="403">
-            <figcaption class="partido__nota" data-nota style="--x:75%;--n:75;--y:15%"><b>1</b><i aria-hidden="true"></i><span>Baño de chocolate</span></figcaption>
-            <figcaption class="partido__nota" data-nota style="--x:53%;--n:53;--y:27%"><b>2</b><i aria-hidden="true"></i><span>Tapa</span></figcaption>
-            <figcaption class="partido__nota" data-nota style="--x:38%;--n:38;--y:50%"><b>3</b><i aria-hidden="true"></i><span>Dulce de leche</span></figcaption>
-          </figure>
-        </div>
-        <ol class="leyenda" data-leyenda aria-hidden="true">
-          <li><b>1</b>Baño de chocolate</li>
-          <li><b>2</b>Tapa</li>
-          <li><b>3</b>Dulce de leche</li>
-        </ol>
-      </div>
-
-      <div class="frente" data-frente>
+       y adentro están las cuatro cajas de colores, una por línea. Cada una se abre a pantalla completa -->
+  <section class="lineas" id="lineas" aria-labelledby="lineas-titulo" data-lineas>
+    <div class="lineas__escena" data-escena>
+      <div class="frente" id="inicio" data-frente>
         <div class="frente__marco" aria-hidden="true"></div>
         <p class="frente__esquina frente__esquina--izq" aria-hidden="true">Mar del Plata</p>
         <p class="frente__esquina frente__esquina--der" aria-hidden="true">Desde 1947</p>
@@ -107,17 +77,7 @@
         </div>
       </div>
 
-    </div>
-  </section>
-
-  <div class="cinta" aria-hidden="true">
-    <div class="cinta__pista" data-cinta><span>Havanna</span><span class="cinta__hueca">Havanna</span><span>Havanna</span><span class="cinta__hueca">Havanna</span><span>Havanna</span><span class="cinta__hueca">Havanna</span><span>Havanna</span><span class="cinta__hueca">Havanna</span><span>Havanna</span><span class="cinta__hueca">Havanna</span><span>Havanna</span><span class="cinta__hueca">Havanna</span><span>Havanna</span><span class="cinta__hueca">Havanna</span><span>Havanna</span><span class="cinta__hueca">Havanna</span></div>
-  </div>
-
-  <!-- 4 · CADA CAJA, SU COLOR -->
-  <section class="lineas" id="lineas" aria-labelledby="lineas-titulo" data-lineas>
-    <div class="lineas__escena">
-      <h2 id="lineas-titulo" class="lineas__titulo" data-lineas-titulo>Cada caja,<br><span class="hueco">su color</span></h2>
+      <h2 id="lineas-titulo" class="lineas__titulo" data-lineas-titulo><span>Cada caja,</span> <span class="hueco">su color</span></h2>
 
       <article class="panel" id="linea-alfajores" data-panel style="--fondo:#FFCC00;--tinta:#DA2A1C;--suave:#2A1710;--lista:#2A1710;--boton-texto:#FFF6DE">
         <button class="panel__tarjeta" type="button" data-ir-panel="0" aria-label="Ver alfajores"><img src="img/caja-mixtos.webp" alt="" loading="lazy"><span>Alfajores</span></button>
@@ -244,14 +204,12 @@
     </div>
     <div class="leo__vitrina" data-vitrina>
       <div class="leo__luz" aria-hidden="true"></div>
-      <!-- paquetitos y alfajores que flotan alrededor del pouch; los grandes y borrosos pasan "por delante de la cámara" -->
+      <!-- los mini alfajores que trae el pouch flotan atrás, a distinta profundidad -->
       <div class="flotan" aria-hidden="true" data-flotan>
         <img src="img/mini-leo-1.webp" alt="" style="--x:-58%;--y:-28%;--w:5.2rem" data-flota="atras" loading="lazy">
         <img src="img/alfajor-leo.webp" alt="" style="--x:46%;--y:-34%;--w:5.4rem" data-flota="atras" loading="lazy">
         <img src="img/mini-leo-9.webp" alt="" style="--x:-60%;--y:26%;--w:4.6rem" data-flota="atras" loading="lazy">
         <img src="img/mini-leo-15.webp" alt="" style="--x:47%;--y:30%;--w:4.2rem" data-flota="atras" loading="lazy">
-        <img src="img/mini-leo-6.webp" alt="" style="--x:36%;--y:20%;--w:10rem" data-flota="adelante" loading="lazy">
-        <img src="img/alfajor-leo.webp" alt="" style="--x:-44%;--y:4%;--w:12rem" data-flota="adelante" loading="lazy">
       </div>
       <div class="pouch__mouse" data-pouch-mouse>
         <!-- los dos pouches de la foto oficial, separados en capas a distinta profundidad:
@@ -380,7 +338,6 @@
   <div class="pie__base" data-pie-marca>
     <p class="pie__canto" aria-hidden="true">Mar del Plata · Desde 1947</p>
     <img src="img/logo.png" alt="" width="1084" height="191" loading="lazy">
-    <p class="pie__canto" aria-hidden="true">Dulce como la vida · Salado como el mar</p>
   </div>
   <div class="pie__legal">
     <p>© 2026 Havanna</p>

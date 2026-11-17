@@ -176,7 +176,8 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
     if (!destino) return;
     e.preventDefault();
     if (lenis) lenis.start();
-    irA(a.getAttribute('href') === '#inicio' ? 0 : destino);
+    const href = a.getAttribute('href');
+    irA(href === '#inicio' ? 0 : href === '#lineas' ? aScroll(window.havanna.lineas, 'abierta') : destino);
   }));
 
   /* 1 · la caja: al llegar, el producto se apoya en el frente ----------------- */
@@ -186,73 +187,20 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
     .from('[data-frente-alfajor]', { y: 90, rotation: -8, opacity: 0, duration: 1.2, ease: 'back.out(1.3)' }, .3)
     .from('[data-frente-pie]', { y: 20, opacity: 0, duration: .8 }, .6);
 
-  /* al bajar, la tapa se levanta; adentro caen los alfajores y se apilan, y uno partido se apoya */
-  const alfajores = $$('[data-alfajor]');
-  const notas = $$('[data-nota]');
-  const voladores = $$('[data-voladores] img');
-  // cada producto tiene su lugar libre de texto; en el celu (--xm, --ym) van a las esquinas
-  const lugar = (img, eje) => {
-    const movil = innerWidth < 1024 && img.style.getPropertyValue(`--${eje}m`);
-    return parseFloat(movil || img.style.getPropertyValue(`--${eje}`)) / 100;
-  };
-
-  const caja = gsap.timeline({
-    defaults: { ease: 'none' },
-    scrollTrigger: {
-      trigger: '[data-caja]', start: 'top top', end: '+=240%', pin: true, scrub: 1, anticipatePin: 1, invalidateOnRefresh: true,
-      onUpdate: () => { const abierta = caja.time() > .7; if (abierta !== cajaAbierta) { cajaAbierta = abierta; marcarCabecera(); } },
-    },
-  });
-  caja
-    // la tapa gira hacia arriba sobre su borde superior y se oscurece al darse vuelta
-    .fromTo('[data-frente]', { rotationX: 0, '--sombra-tapa': 0 }, { rotationX: -96, '--sombra-tapa': .55, duration: 1, ease: 'power2.in' }, 0)
-    .set('[data-frente]', { autoAlpha: 0 }, 1)
-    // el borde amarillo de arriba de la bisagra se va recién con la tapa abierta: no asoma el fondo crema
-    .fromTo('.caja__escena', { '--tira': 1 }, { '--tira': 0, duration: .25 }, .9)
-    .fromTo('[data-adentro-titulo] span', { yPercent: 60, opacity: 0 }, { yPercent: 0, opacity: 1, stagger: .1, duration: .5, ease: 'power2.out' }, .7)
-    .addLabel('abierta', 1.1);
-  // los alfajores caen uno por uno y rebotan al apoyarse
-  alfajores.forEach((al, i) => {
-    caja.fromTo(al, { y: () => -innerHeight, opacity: 0 }, { y: 0, opacity: 1, duration: .55, ease: 'bounce.out' }, 1.1 + i * .3);
-  });
-  caja
-    // el partido entra desde el costado y se apoya contra la pila
-    .fromTo('[data-partido]', { x: () => innerWidth * .4, rotation: 28, opacity: 0 }, { x: 0, rotation: 0, opacity: 1, duration: .6, ease: 'back.out(1.4)' }, 2.1)
-    .fromTo(notas, { opacity: 0, scale: .6 }, { opacity: 1, scale: 1, stagger: .12, duration: .3, ease: 'back.out(2)' }, 2.6)
-    .fromTo('[data-leyenda] li', { opacity: 0, y: 10 }, { opacity: 1, y: 0, stagger: .1, duration: .3 }, 2.7);
-  voladores.forEach((img, i) => {
-    const g = parseFloat(img.style.getPropertyValue('--g'));
-    caja.fromTo(img,
-      { xPercent: -50, yPercent: -50, x: 0, y: 0, scale: .3, rotation: 0, opacity: 0 },
-      { x: () => innerWidth * lugar(img, 'x'), y: () => innerHeight * lugar(img, 'y'), scale: 1, rotation: g, opacity: 1, duration: .8, ease: 'power3.out' },
-      3 + i * .08);
-  });
-  caja.to({}, { duration: .6 });
-
-  /* cinta: corre sola y acelera con la velocidad del scroll */
-  const cinta = gsap.to('[data-cinta]', { xPercent: -50, duration: 22, ease: 'none', repeat: -1 });
-  let sentido = 1;
-  ScrollTrigger.create({
-    trigger: '.cinta', start: 'top bottom', end: 'bottom top',
-    onUpdate: (st) => {
-      const v = st.getVelocity();
-      if (Math.abs(v) > 10) sentido = v > 0 ? 1 : -1;
-      gsap.to(cinta, { timeScale: sentido * (1 + Math.min(Math.abs(v) / 300, 6)), duration: .25, overwrite: true });
-      gsap.to(cinta, { timeScale: sentido, duration: 1.2, delay: .25, ease: 'power2.out' });
-    },
-  });
-
-  /* 4 · cada caja se abre a pantalla completa ----------------------------- */
+  /* al bajar, la tapa se levanta y adentro están las cuatro cajas; después cada una se abre a pantalla completa */
   const paneles = $$('[data-panel]');
-  gsap.fromTo(paneles, { yPercent: 8, opacity: 0 }, { yPercent: 0, opacity: 1, stagger: .08, duration: .8, ease: 'power3.out', scrollTrigger: { trigger: '[data-lineas]', start: 'top 75%' } });
 
   const botonesIndice = $$('[data-indice] [data-ir-panel]');
-  const inicios = paneles.map((_, i) => .5 + i * 1.4);
+  // la tapa ocupa el primer tramo; las cajas arrancan cuando ya se ve el título
+  const TAPA = 1.3;
+  const inicios = paneles.map((_, i) => TAPA + .5 + i * 1.4);
   const lineas = gsap.timeline({
     // el índice marca la línea que está a la vista; va en el timeline (no en el scroll) porque
     // con scrub la animación llega después que el scroll y el índice quedaba un panel atrás
     onUpdate: () => {
       const ahora = lineas.time();
+      const abierta = ahora > .7;
+      if (abierta !== cajaAbierta) { cajaAbierta = abierta; marcarCabecera(); }
       const activa = inicios.reduce((a, t, i) => (ahora >= t + .5 ? i : a), -1);
       botonesIndice.forEach((b, i) => {
         const era = b.getAttribute('aria-current') === 'true';
@@ -263,14 +211,23 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
       });
     },
     scrollTrigger: {
-      trigger: '[data-lineas]', start: 'top top', end: () => `+=${paneles.length * 115}%`, pin: true, scrub: 1.4, anticipatePin: 1, invalidateOnRefresh: true,
+      trigger: '[data-lineas]', start: 'top top', end: () => `+=${110 + paneles.length * 115}%`, pin: true, scrub: 1.2, anticipatePin: 1, invalidateOnRefresh: true,
       // al soltarse la sección el índice se va: si no, sube flotando sobre la tapa de Leo
       onLeave: () => gsap.to('[data-indice]', { autoAlpha: 0, duration: .2, ease: 'power2.out' }),
       onEnterBack: () => gsap.to('[data-indice]', { autoAlpha: 1, duration: .25, ease: 'power2.out' }),
     },
   });
+  lineas
+    // la tapa gira hacia arriba sobre su borde superior y se oscurece al darse vuelta
+    .fromTo('[data-frente]', { rotationX: 0, '--sombra-tapa': 0 }, { rotationX: -96, '--sombra-tapa': .55, duration: 1, ease: 'power2.in' }, 0)
+    .set('[data-frente]', { autoAlpha: 0 }, 1)
+    // el borde amarillo de arriba de la bisagra se va recién con la tapa abierta: no asoma el fondo crema
+    .fromTo('[data-escena]', { '--tira': 1 }, { '--tira': 0, duration: .25 }, .9)
+    .fromTo('[data-lineas-titulo] span', { yPercent: 60, opacity: 0 }, { yPercent: 0, opacity: 1, stagger: .1, duration: .5, ease: 'power2.out' }, .7)
+    .fromTo('.panel__tarjeta', { y: 40, opacity: 0 }, { y: 0, opacity: 1, stagger: .06, duration: .5, ease: 'power3.out' }, .75)
+    .addLabel('abierta', 1.3);
   paneles.forEach((panel, i) => {
-    const t = .5 + i * 1.4;
+    const t = inicios[i];
     const contenido = $('.panel__contenido', panel);
     // a partir del segundo, cada caja sube desde abajo y tapa a la anterior
     if (i > 0) lineas.set(panel, { '--t': () => `${panel.offsetHeight}px`, '--r': '0%', '--b': '0px', '--l': '0%', '--radio': '0rem' }, t - .01);
@@ -281,7 +238,7 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
       .fromTo(contenido, { autoAlpha: 0 }, { autoAlpha: 1, duration: .25 }, t + .6)
       .fromTo($('.panel__nombre', panel), { yPercent: 40 }, { yPercent: 0, duration: .5, ease: 'power3.out' }, t + .6)
       .fromTo($$('.panel__fotos img', panel), { y: 90, opacity: 0 }, { y: 0, opacity: 1, stagger: .08, duration: .5, ease: 'back.out(1.5)' }, t + .7);
-    if (i === 0) lineas.to('[data-lineas-titulo]', { opacity: 0, duration: .3 }, t);
+    if (i === 0) lineas.to('[data-lineas-titulo] span', { opacity: 0, duration: .3 }, t);
     lineas.addLabel(`linea${i}`, t + 1.1);
   });
   lineas.to({}, { duration: .5 });
@@ -311,7 +268,6 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
   const pouch = $('[data-pouch]');
   const mouse = $('[data-pouch-mouse]');
   const flotanAtras = $$('[data-flota="atras"]');
-  const flotanAdelante = $$('[data-flota="adelante"]');
 
   // reflejo: la franja de luz corre por el dorado según cuánto está inclinado (scroll + mouse)
   let antes = '';
@@ -353,10 +309,7 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
       // paquetitos que suben y quedan flotando a distintas profundidades
       .fromTo(flotanAtras, { y: vh(55), z: (i) => [-140, -60, -100, -40][i] || -80, rotation: (i) => [-30, 24, -18, 28][i] || 0, rotationY: (i) => [-35, 30, -25, 35][i] || 0, opacity: 0 },
         { y: 0, rotation: (i) => [-10, 14, -6, 12][i] || 0, rotationY: (i) => [-14, 16, -10, 14][i] || 0, opacity: 1, duration: 1.4, stagger: .15, ease: 'power2.out' }, .8)
-      .to(flotanAtras, { y: vh(-4), rotation: '+=6', rotationY: '+=10', duration: 1.1, ease: 'none' }, 2.3)
-      // uno grande y desenfocado pasa por delante, cerca de la cámara
-      .fromTo(flotanAdelante, { y: vh(90), z: 160, rotation: -20, rotationY: -25 },
-        { y: vh(-120), rotation: 25, rotationY: 30, duration: 2.2, stagger: .45, ease: 'none' }, .7);
+      .to(flotanAtras, { y: vh(-4), rotation: '+=6', rotationY: '+=10', duration: 1.1, ease: 'none' }, 2.3);
   }
 
   if (conMouse) {
@@ -404,24 +357,24 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
 
   const escenaRegalos = gsap.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: regalos, start: 'top top', end: '+=300%', pin: true, scrub: 1, invalidateOnRefresh: true },
+    scrollTrigger: { trigger: regalos, start: 'top top', end: '+=250%', pin: true, scrub: 1, invalidateOnRefresh: true },
   })
     // 1 · las letras
     // el muro no existe hasta que la sección queda anclada: así no se ve el borde cortado al entrar
-    .fromTo(muro, { xPercent: -50, yPercent: -50, rotation: -26, scale: .62 }, { rotation: -90, scale: 1.15, duration: 1, ease: 'power2.inOut' }, 0)
-    .fromTo(muro, { opacity: .3 }, { opacity: 1, duration: .5, ease: 'power1.in' }, 0)
-    .fromTo(regalos, { backgroundColor: '#FFF6DE' }, { backgroundColor: '#DA2A1C', duration: .6, ease: 'power1.inOut' }, .15)
+    .fromTo(muro, { xPercent: -50, yPercent: -50, rotation: -26, scale: .62 }, { rotation: -90, scale: 1.15, duration: .7, ease: 'power2.inOut' }, 0)
+    .fromTo(muro, { opacity: .3 }, { opacity: 1, duration: .35, ease: 'power1.in' }, 0)
+    .fromTo(regalos, { backgroundColor: '#FFF6DE' }, { backgroundColor: '#DA2A1C', duration: .45, ease: 'power1.inOut' }, .1)
     .fromTo(filasMuro, { xPercent: (i) => (i % 2 ? -12 : 12) }, { xPercent: (i) => (i % 2 ? 22 : -22), duration: 3.6 }, 0)
-    .to(muro, { scale: 4.2, opacity: 0, duration: .6, ease: 'power2.in' }, 1)
+    .to(muro, { scale: 4.2, opacity: 0, duration: .4, ease: 'power2.in' }, .65)
     // 2 · el muro vuelve, chico y muy tenue, como fondo de los regalos
-    .set(muro, { scale: .9, rotation: -90 }, 1.6)
-    .to(muro, { opacity: .1, duration: .4 }, 1.6)
+    .set(muro, { scale: .9, rotation: -90 }, 1.05)
+    .to(muro, { opacity: .1, duration: .3 }, 1.05)
     // 3 · el índice aparece
-    .fromTo('[data-regalos-indice]', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: .35, ease: 'power2.out' }, 1.55);
+    .fromTo('[data-regalos-indice]', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: .35, ease: 'power2.out' }, 1);
   // 4 · las piezas pasan de a una: el producto entra girando desde la derecha y el título sube desde abajo;
   //     al llegar la siguiente, la anterior se va hacia la izquierda y hacia arriba
   const piezas = $$('[data-regalo]');
-  const llegadas = piezas.map((_, i) => 1.7 + i * 1.15);
+  const llegadas = piezas.map((_, i) => 1.1 + i * 1.1);
   piezas.forEach((pieza, i) => {
     const t = llegadas[i];
     const foto = $('.regalo__foto', pieza);
@@ -430,14 +383,16 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
     escenaRegalos
       .fromTo(pieza, { autoAlpha: 0 }, { autoAlpha: 1, duration: .01 }, t)
       .fromTo(foto, { xPercent: 45, rotation: 10, opacity: 0 }, { xPercent: 0, rotation: 0, opacity: 1, duration: .55, ease: 'power3.out' }, t)
-      .fromTo(titulo, { yPercent: 35, clipPath: 'inset(0% 0% 100% 0%)' }, { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: .5, ease: 'power3.out' }, t + .05)
+      .fromTo(titulo, { yPercent: 35, clipPath: 'inset(0% 0% 100% 0%)' }, { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: .5, ease: 'power3.out' }, t + .1)
       .fromTo(resto, { y: 16, opacity: 0 }, { y: 0, opacity: 1, stagger: .06, duration: .35, ease: 'power2.out' }, t + .25);
     if (i === piezas.length - 1) return;
-    const sale = llegadas[i + 1] - .3;
+    // la siguiente entra mientras esta se va: nunca queda la pantalla vacía
+    const sale = llegadas[i + 1] - .15;
     escenaRegalos
       .to(foto, { xPercent: -40, rotation: -8, opacity: 0, duration: .3, ease: 'power2.in' }, sale)
-      .to(titulo, { yPercent: -25, clipPath: 'inset(0% 0% 0% 0%)', opacity: 0, duration: .3, ease: 'power2.in' }, sale)
-      .to(resto, { opacity: 0, duration: .2 }, sale)
+      // los textos se van antes de que llegue el siguiente: dos títulos nunca se pisan
+      .to(titulo, { yPercent: -25, opacity: 0, duration: .2, ease: 'power2.in' }, llegadas[i + 1] - .3)
+      .to(resto, { opacity: 0, duration: .15 }, llegadas[i + 1] - .3)
       .to(pieza, { autoAlpha: 0, duration: .01 }, sale + .3);
   });
   escenaRegalos.to({}, { duration: .5 });
@@ -460,7 +415,7 @@ if (!sinMovimiento && window.gsap && window.ScrollTrigger) {
   gsap.fromTo('[data-pie-marca] img', { yPercent: 100 }, { yPercent: 0, ease: 'power3.out', duration: 1.2, scrollTrigger: { trigger: '[data-pie-marca]', start: 'top 95%' } });
 
   addEventListener('load', () => ScrollTrigger.refresh());
-  window.havanna = { aScroll, caja, lineas, lenis };
+  window.havanna = { aScroll, lineas, lenis };
 } else {
   cajaAbierta = true;
   marcarCabecera();

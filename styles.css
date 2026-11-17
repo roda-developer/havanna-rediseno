@@ -46,11 +46,6 @@ ul, ol { padding: 0; list-style: none; }
 
 /* ---------- sistema ---------- */
 
-/* volanta: siempre la misma, chica, con filete */
-.volanta { font: 600 .75rem/1 var(--texto); letter-spacing: .14em; text-transform: uppercase; display: flex; align-items: center; gap: .6rem; }
-.volanta::before { content: ""; width: 1.6rem; height: 2px; background: currentColor; }
-.volanta--oro { color: var(--oro); }
-
 /* títulos de sección: una sola escala */
 .titulo { font: 900 clamp(2.8rem, 11vw, 6.5rem)/.86 var(--display); text-transform: uppercase; }
 /* letras huecas: el contorno va detrás del relleno (del color del fondo), así no se ven
@@ -136,17 +131,14 @@ ul, ol { padding: 0; list-style: none; }
 
 /* ---------- 1 · la caja ---------- */
 
-.caja { position: relative; height: 100lvh; }
-.caja__escena { position: relative; height: 100lvh; overflow: hidden; perspective: 1800px; perspective-origin: 50% calc(var(--cabecera) + .25rem); background: var(--crema); }
 /* el borde amarillo de la caja, arriba de la bisagra: se desvanece (--tira) cuando la tapa termina de abrirse */
-.caja__escena::before { content: ""; position: absolute; inset: 0 0 auto; height: calc(var(--cabecera) + .25rem); z-index: 4; background: var(--amarillo); opacity: var(--tira, 1); pointer-events: none; }
+.lineas__escena::before { content: ""; position: absolute; inset: 0 0 auto; height: calc(var(--cabecera) + .25rem); z-index: 4; background: var(--amarillo); opacity: var(--tira, 1); pointer-events: none; }
 
 /* el frente: igual que la caja real, amarillo con filete doble, logo y el producto */
 .frente {
-  /* la tapa mide lo mismo que la escena: si sobraba, al levantarse quedaba una franja amarilla debajo del marco.
-     --sobra es lo que tapa la barra del navegador del celu; el marco y los botones terminan arriba de esa franja */
-  --sobra: calc(100lvh - 100dvh);
-  position: absolute; inset: 0 0 auto; height: 100lvh; z-index: 5;
+  /* la tapa mide lo mismo que la escena: si sobraba, al levantarse quedaba una franja amarilla debajo del marco */
+  --sobra: 0px;
+  position: absolute; inset: 0; z-index: 45;
   background: var(--amarillo);
   display: grid; grid-template-rows: 1fr auto;
   padding: calc(var(--cabecera) + 1.75rem) calc(var(--margen) + .75rem) calc(2.25rem + var(--sobra));
@@ -245,80 +237,13 @@ ul, ol { padding: 0; list-style: none; }
   .frente__link { min-height: 2.9rem; }
 }
 
-/* adentro de la caja: alfajores enteros apilados y uno partido apoyado */
-.adentro { position: absolute; inset: 0 0 auto; height: 100svh; display: grid; place-items: center; align-content: center; gap: 1.5rem; padding-top: var(--cabecera); }
-.adentro__titulo { position: absolute; top: calc(var(--cabecera) + 1.25rem); left: var(--margen); z-index: 2; display: grid; font: 900 clamp(2.6rem, 10vw, 5.5rem)/.86 var(--display); text-transform: uppercase; }
-.adentro__titulo .hueco { -webkit-text-stroke-color: var(--choco); }
-
-/* --a: ancho de un alfajor; todo lo demás se mide desde ahí */
-.mesa { --a: min(31vw, 17svh); display: flex; align-items: flex-end; margin-top: 4rem; }
-.apilado { position: relative; width: var(--a); height: calc(var(--a) * 1.94); }
-/* cada alfajor apoya sobre la tapa del de abajo (la tapa ocupa el 11% de su alto) */
-.apilado__alfajor { position: absolute; left: 0; bottom: calc(var(--i) * var(--a) * .62); width: 100%; z-index: var(--i); filter: drop-shadow(0 10px 12px rgba(42, 23, 16, .25)); will-change: transform; }
-.apilado__alfajor--espejo { transform: scaleX(-1); }
-
-.partido { position: relative; width: calc(var(--a) * 1.05); margin-left: calc(var(--a) * -.1); z-index: 5; }
-.partido img { width: 100%; filter: drop-shadow(0 18px 18px rgba(42, 23, 16, .28)); }
-/* el punto marca la capa; en el celu lleva el número y la referencia va abajo */
-.partido__nota { position: absolute; left: var(--x); top: var(--y); transform: translate(-50%, -50%); }
-/* número: punto rojo con halo crema, como un pin sobre la capa */
-.partido__nota b, .leyenda b {
-  display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%;
-  background: var(--rojo); color: var(--crema); font: 700 .72rem/1 var(--texto); font-variant-numeric: tabular-nums;
-  box-shadow: 0 0 0 3px rgba(255, 246, 222, .9), 0 6px 14px -4px rgba(42, 23, 16, .45);
-}
-.partido__nota i, .partido__nota span { display: none; }
-
-.leyenda { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem 1.2rem; padding: 0 var(--margen); font: 600 .78rem/1 var(--texto); }
-.leyenda li { display: flex; align-items: center; gap: .5rem; }
-
-.volador { position: absolute; inset: 0; pointer-events: none; }
-.volador img { position: absolute; left: 50%; top: 52%; width: calc(var(--w) * 1vw + 3rem); filter: var(--sombra-producto); opacity: 0; will-change: transform; }
-/* en el celu solo dos, en las esquinas, para no tapar nada */
-.volador img[data-solo-compu] { display: none; }
-
-@media (min-width: 64rem) {
-  .mesa { --a: min(16vw, 30svh, 17rem); margin-top: 3rem; }
-  /* en compu: el número va en un círculo rojo que late; de ahí sale una línea fina hasta el nombre */
-  .partido { container-type: inline-size; }
-  .partido__nota { display: flex; align-items: center; transform: translate(-.6rem, -50%); --retraso: 0s; }
-  .partido__nota:nth-of-type(2) { --retraso: .7s; }
-  .partido__nota:nth-of-type(3) { --retraso: 1.4s; }
-  .partido__nota b { flex: none; position: relative; z-index: 1; width: 1.2rem; height: 1.2rem; font-size: .6rem; box-shadow: 0 0 0 2.5px rgba(255, 246, 222, .9), 0 4px 10px -3px rgba(42, 23, 16, .45); }
-  .partido__nota b::before, .partido__nota b::after {
-    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 50%; border: 1.5px solid var(--rojo);
-    animation: latido 4.2s cubic-bezier(.25, .6, .35, 1) var(--retraso) infinite both;
-  }
-  .partido__nota b::after { animation-delay: calc(var(--retraso) + 2.1s); }
-  .partido__nota i {
-    display: block; position: relative; flex: none; height: 1px; margin-left: 3px;
-    width: calc((100 - var(--n)) * 1cqw + 2.5rem);
-    background: linear-gradient(90deg, rgba(42, 23, 16, .1), var(--choco));
-  }
-  .partido__nota span {
-    display: block; margin-left: .8rem;
-    font: 700 .78rem/1 var(--texto); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; color: var(--choco);
-  }
-  .leyenda { display: none; }
-  .volador img { width: calc(var(--w) * .8vw + 3rem); }
-  @keyframes latido { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(2.8); opacity: 0; } }
-  .volador img[data-solo-compu] { display: block; }
-}
-
-/* ---------- cinta ---------- */
-
-/* el patrón de sus pouches: HAVANNA repetido, una llena y una hueca, sobre rojo */
-.cinta { background: var(--rojo); color: var(--crema); padding: .55rem 0 .45rem; transform: rotate(-2deg) scale(1.04); margin: -1.5rem 0; position: relative; z-index: 4; overflow: hidden; border-block: 3px double var(--crema); }
-.cinta__pista { display: flex; align-items: center; gap: .9rem; width: max-content; will-change: transform; }
-.cinta span { font: 900 clamp(2rem, 7vw, 3.4rem)/.95 var(--display); text-transform: uppercase; white-space: nowrap; letter-spacing: .01em; }
-.cinta__hueca { color: var(--rojo); -webkit-text-stroke: .07em var(--crema); paint-order: stroke fill; }
-
 /* ---------- 4 · cada caja, su color ---------- */
 
 .lineas { position: relative; background: var(--crema); }
-.lineas__escena { position: relative; height: 100svh; overflow: hidden; }
-.lineas__titulo { position: absolute; top: calc(var(--cabecera) + 1.25rem); left: var(--margen); font: 900 clamp(2.6rem, 10vw, 5.5rem)/.86 var(--display); text-transform: uppercase; }
+.lineas__escena { position: relative; height: 100svh; overflow: hidden; perspective: 1800px; perspective-origin: 50% calc(var(--cabecera) + .25rem); }
+.lineas__titulo { position: absolute; top: calc(var(--cabecera) + 1.25rem); left: var(--margen); display: grid; font: 900 clamp(2.6rem, 10vw, 5.5rem)/.86 var(--display); text-transform: uppercase; }
 .lineas__titulo .hueco { -webkit-text-stroke-color: var(--choco); }
+.lineas__titulo span { display: inline-block; }
 
 /* --t y --b registradas como longitudes: el navegador las resuelve a px y GSAP las anima sin mezclar unidades */
 @property --t { syntax: '<length-percentage>'; inherits: true; initial-value: 0px; }
@@ -400,7 +325,7 @@ ul, ol { padding: 0; list-style: none; }
   /* compu: el título va en una línea y su tamaño sigue al alto de la pantalla */
   .lineas { --titulo: clamp(2.8rem, min(5.5vw, 11svh), 5.5rem); }
   .lineas__titulo { font-size: var(--titulo); white-space: nowrap; }
-  .lineas__titulo br { display: none; }
+  .lineas__titulo { display: block; }
   .lineas__titulo .hueco { margin-left: .2em; }
   /* compu: cuatro tarjetas de 21.5% con 2% de margen; arrancan justo debajo del título y terminan sobre el índice */
   .lineas .panel { --t: calc(var(--cabecera) + 1.25rem + var(--titulo) * .86 + 1.5rem); --b: 5rem; }
@@ -438,7 +363,8 @@ ul, ol { padding: 0; list-style: none; }
 .leo__texto { display: grid; gap: 1.25rem; align-content: center; position: relative; z-index: 1; }
 /* el título en dos tamaños: la frase arranca chica y remata grande en "por la gloria" */
 .leo__titulo { display: grid; gap: .35rem; font: 800 1rem/.95 var(--display); text-transform: uppercase; }
-.leo__titulo-chico { font-size: clamp(1.35rem, 4vw, 2rem); line-height: 1.05; letter-spacing: .01em; color: rgba(255, 246, 222, .78); max-width: 22ch; text-wrap: balance; }
+/* la frase va en la itálica de las notas, en minúscula: se lee de corrido y deja que "por la gloria" sea el golpe */
+.leo__titulo-chico { font-family: var(--nota); font-style: italic; font-weight: 400; text-transform: none; font-size: clamp(1.35rem, 2.6vw, 2rem); line-height: 1.2; color: rgba(255, 246, 222, .78); max-width: 22ch; text-wrap: balance; }
 .leo__titulo-grande { font-size: clamp(3.4rem, 12vw, 7.2rem); line-height: .85; color: var(--oro); }
 .leo__detalle { color: rgba(255, 246, 222, .7); }
 .leo__compra { display: flex; align-items: center; gap: 1.5rem; }
@@ -451,7 +377,6 @@ ul, ol { padding: 0; list-style: none; }
 .flotan [data-flota="atras"] { z-index: 0; }
 .flotan [data-flota="adelante"] { z-index: 2; filter: blur(3px) drop-shadow(0 20px 20px rgba(0, 0, 0, .4)); }
 /* sin movimiento, los de adelante no aportan: se ocultan */
-@media (prefers-reduced-motion: reduce) { .flotan [data-flota="adelante"] { display: none; } }
 .leo__vitrina { position: relative; display: grid; place-items: center; min-height: 22rem; perspective: 1200px; transform-style: preserve-3d; }
 .leo__luz { position: absolute; pointer-events: none; width: 120%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(closest-side, rgba(210, 174, 92, .55), rgba(210, 174, 92, .12) 55%, transparent 72%); }
 /* los pouches: dos capas de la foto oficial a distinta profundidad dentro de un espacio 3D.
@@ -625,12 +550,9 @@ ul, ol { padding: 0; list-style: none; }
 /* ---------- sin movimiento: todo abierto y quieto ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  .caja, .caja__escena { height: auto; }
-  .caja__escena { display: flex; flex-direction: column; }
-  .frente { --sobra: 0px; position: relative; height: auto; min-height: 100svh; order: 1; }
-  .adentro { position: relative; height: auto; min-height: 100svh; order: 2; }
-  .volador { display: none; }
-  .lineas__escena { height: auto; display: grid; gap: 1rem; padding: 6rem var(--margen) 2rem; }
+  .lineas__escena { height: auto; display: grid; gap: 1rem; padding: 0 var(--margen) 2rem; perspective: none; }
+  .lineas__escena::before { display: none; }
+  .frente { position: relative; min-height: 100svh; margin: 0 calc(var(--margen) * -1) 2rem; }
   .lineas__titulo { position: static; }
   .panel { position: relative; clip-path: inset(0 round 1rem); min-height: 80svh; }
   .panel__tarjeta, .indice { display: none; }
@@ -645,3 +567,15 @@ ul, ol { padding: 0; list-style: none; }
   .mas-zonas { min-height: 2.75rem; }
 }
 
+/* celu: la órbita repetía los mismos países que los botones de abajo; queda solo el buscador */
+@media (max-width: 63.99rem) {
+  .mundo .orbita { display: none; }
+}
+
+/* celus bajos: las cuatro cajas terminan arriba del índice (con 10svh el índice tapaba los nombres de abajo) */
+@media (max-width: 63.99rem) and (max-height: 700px) {
+  .panel:nth-of-type(1) { --t: 29svh; --b: calc(35.5svh + 2.75rem); }
+  .panel:nth-of-type(2) { --t: 29svh; --b: calc(35.5svh + 2.75rem); }
+  .panel:nth-of-type(3) { --t: calc(64.5svh - 2rem); --b: 4.75rem; }
+  .panel:nth-of-type(4) { --t: calc(64.5svh - 2rem); --b: 4.75rem; }
+}
